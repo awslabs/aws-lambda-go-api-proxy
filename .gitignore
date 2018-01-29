@@ -1,0 +1,19 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, build with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+.vscode
+vendor/*/
+gin/aws-lambda-go-api-proxy-gin
+core/aws-lambda-go-api-proxy-core
+sample/main
+sample/output-sam.yaml
