@@ -10,7 +10,7 @@ $ go get github.com/aws/aws-lambda-go/events
 $ go get github.com/aws/aws-lambda-go/lambda
 
 # Next, we install the core library
-$ go get github.com/awslabs/aws-serverless-go-api
+$ go get github.com/awslabs/aws-lambda-go-api-api
 ```
 
 Following the instructions from the [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/go-programming-model-handler-types.html), we need to declare a `Handler` method for our main package. We will declare a `ginlambda.GinLambda` object
