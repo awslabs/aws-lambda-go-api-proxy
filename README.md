@@ -24,7 +24,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/awslabs/aws-serverless-gin/gin"
+	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 )
 
@@ -94,7 +94,7 @@ stageVarValue := apiGwStageVars["MyStageVar"]
 ```
 
 ## Supporting other frameworks
-The `aws-serverless-go-api` library includes two package: `ginlambda` and `core`. The `ginlambda` package contains the [Gin](https://gin-gonic.github.io/gin/)-specific implementation of the library. The `core` package, contains utility methods and interfaces to translate API Gateway proxy events into Go's default `http.Request` and `http.ResponseWriter` objects.
+The `aws-lambda-go-api-proxy` library includes two package: `ginlambda` and `core`. The `ginlambda` package contains the [Gin](https://gin-gonic.github.io/gin/)-specific implementation of the library. The `core` package, contains utility methods and interfaces to translate API Gateway proxy events into Go's default `http.Request` and `http.ResponseWriter` objects.
 
 You can see that the [`ginlambda.go`](gin/ginlambda.go) file extends the `RequestAccesor` struct defined in the [`request.go`](core/request.go) file.  `RequestAccessor` gives you access to the `ProxyEventToHTTPRequest()` method.
 
