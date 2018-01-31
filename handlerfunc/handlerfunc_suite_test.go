@@ -9,5 +9,5 @@ import (
 
 func TestGin(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Gin Suite")
+	RunSpecs(t, "HandlerFuncAdapter Suite")
 }
