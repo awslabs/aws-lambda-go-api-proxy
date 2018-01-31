@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestGin(t *testing.T) {
+func TestGorillaMux(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Gorilla Mux Suite")
 }
