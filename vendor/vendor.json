@@ -63,6 +63,12 @@
 			"revisionTime": "2018-01-25T21:43:03Z"
 		},
 		{
+			"checksumSHA1": "uFNLkTxk8BkHTk0Jcub2lj2BX4M=",
+			"path": "github.com/google/uuid",
+			"revision": "dec09d789f3dba190787f8b4454c7d3c936fed9e",
+			"revisionTime": "2017-11-29T19:10:14Z"
+		},
+		{
 			"checksumSHA1": "6L/3XPIhlmbIX4AMgW8UnguuyWo=",
 			"path": "github.com/json-iterator/go",
 			"revision": "bca911dae0735b8220ddb30236e11cff9d959f19",
