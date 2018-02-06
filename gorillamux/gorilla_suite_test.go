@@ -1,4 +1,4 @@
-package ginadapter_test
+package gorillamux_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestGin(t *testing.T) {
+func TestGorillaMux(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Gin Suite")
+	RunSpecs(t, "Gorilla Mux Suite")
 }

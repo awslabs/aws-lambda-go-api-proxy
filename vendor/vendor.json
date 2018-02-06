@@ -63,6 +63,18 @@
 			"revisionTime": "2018-01-25T21:43:03Z"
 		},
 		{
+			"checksumSHA1": "g/V4qrXjUGG9B+e3hB+4NAYJ5Gs=",
+			"path": "github.com/gorilla/context",
+			"revision": "08b5f424b9271eedf6f9f0ce86cb9396ed337a42",
+			"revisionTime": "2016-08-17T18:46:32Z"
+		},
+		{
+			"checksumSHA1": "gzYAE/UJ+G7yTqkdJAMActxDdxw=",
+			"path": "github.com/gorilla/mux",
+			"revision": "c0091a029979286890368b4c7b301261e448e242",
+			"revisionTime": "2018-01-20T07:58:19Z"
+    },
+    {
 			"checksumSHA1": "uFNLkTxk8BkHTk0Jcub2lj2BX4M=",
 			"path": "github.com/google/uuid",
 			"revision": "dec09d789f3dba190787f8b4454c7d3c936fed9e",
@@ -265,6 +277,12 @@
 			"path": "github.com/ugorji/go/codec",
 			"revision": "d2b24cf3d3b4fe77f5ca411be71afb460ce4c92d",
 			"revisionTime": "2018-01-29T16:05:44Z"
+		},
+		{
+			"checksumSHA1": "wWhBVw5JhTUIbBstf20hucDfY/o=",
+			"path": "github.com/urfave/negroni",
+			"revision": "22c5532ea862c34fdad414e90f8cc00b4f6f4cab",
+			"revisionTime": "2018-01-30T04:45:49Z"
 		},
 		{
 			"checksumSHA1": "ag6CP2CjfMRiJxDuBDVKytu5sR8=",

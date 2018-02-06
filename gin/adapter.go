@@ -1,10 +1,9 @@
 // Packge ginlambda add Gin support for the aws-severless-go-api library.
 // Uses the core package behind the scenes and exposes the New method to
 // get a new instance and Proxy method to send request to the Gin engine.
-package ginlambda
+package ginadapter
 
 import (
-	"log"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -35,25 +34,16 @@ func (g *GinLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayP
 	ginRequest, err := g.ProxyEventToHTTPRequest(req)
 
 	if err != nil {
-		log.Println("Could not convert proxy event to request")
-		log.Println(err)
-		return gatewayTimeout(), err
+		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	respWriter := core.NewProxyResponseWriter()
-
 	g.ginEngine.ServeHTTP(http.ResponseWriter(respWriter), ginRequest)
 
 	proxyResponse, err := respWriter.GetProxyResponse()
 	if err != nil {
-		log.Println("Error while generating proxy response")
-		log.Println(err)
-		return gatewayTimeout(), err
+		return core.GatewayTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
 	}
-	return proxyResponse, nil
-}
 
-// Returns a dafault Gateway Timeout (504) response
-func gatewayTimeout() events.APIGatewayProxyResponse {
-	return events.APIGatewayProxyResponse{StatusCode: http.StatusGatewayTimeout}
+	return proxyResponse, nil
 }

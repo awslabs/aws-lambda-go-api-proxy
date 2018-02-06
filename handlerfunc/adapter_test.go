@@ -1,29 +1,28 @@
-package ginadapter_test
+package handlerfunc_test
 
 import (
+	"fmt"
 	"log"
+	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
-	"github.com/gin-gonic/gin"
+	"github.com/awslabs/aws-lambda-go-api-proxy/handlerfunc"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("GinLambda tests", func() {
+var _ = Describe("HandlerFuncAdapter tests", func() {
 	Context("Simple ping request", func() {
 		It("Proxies the event correctly", func() {
 			log.Println("Starting test")
-			r := gin.Default()
-			r.GET("/ping", func(c *gin.Context) {
-				log.Println("Handler!!")
-				c.JSON(200, gin.H{
-					"message": "pong",
-				})
-			})
 
-			adapter := ginadapter.New(r)
+			handler := func(w http.ResponseWriter, req *http.Request) {
+				w.Header().Add("unfortunately-required-header", "")
+				fmt.Fprintf(w, "Go Lambda!!")
+			}
+
+			adapter := handlerfunc.New(handler)
 
 			req := events.APIGatewayProxyRequest{
 				Path:       "/ping",
