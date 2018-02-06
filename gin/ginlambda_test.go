@@ -1,4 +1,4 @@
-package ginlambda_test
+package ginadapter_test
 
 import (
 	"log"
@@ -23,14 +23,14 @@ var _ = Describe("GinLambda tests", func() {
 				})
 			})
 
-			lambdaGin := ginlambda.New(r)
+			adapter := ginadapter.New(r)
 
 			req := events.APIGatewayProxyRequest{
 				Path:       "/ping",
 				HTTPMethod: "GET",
 			}
 
-			resp, err := lambdaGin.Proxy(req)
+			resp, err := adapter.Proxy(req)
 
 			Expect(err).To(BeNil())
 			Expect(resp.StatusCode).To(Equal(200))

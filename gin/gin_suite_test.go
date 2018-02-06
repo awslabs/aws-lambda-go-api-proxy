@@ -1,4 +1,4 @@
-package ginlambda_test
+package ginadapter_test
 
 import (
 	"testing"
