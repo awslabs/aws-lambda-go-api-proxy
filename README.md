@@ -29,7 +29,7 @@ import (
 )
 
 var initialized = false
-var ginLambda *ginlambda.GinLambda
+var ginLambda *ginadapter.GinLambda
 
 func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 
@@ -43,7 +43,7 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 			})
 		})
 
-		ginLambda = ginlambda.New(r)
+		ginLambda = ginadapter.New(r)
 		initialized = true
 	}
 
