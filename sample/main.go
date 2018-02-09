@@ -11,7 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var ginLambda *ginlambda.GinLambda
+var ginLambda *ginadapter.GinLambda
 
 // Handler is the main entry point for Lambda. Receives a proxy request and
 // returns a proxy response
@@ -24,7 +24,7 @@ func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse,
 		r.GET("/pets/:id", getPet)
 		r.POST("/pets", createPet)
 
-		ginLambda = ginlambda.New(r)
+		ginLambda = ginadapter.New(r)
 	}
 
 	return ginLambda.Proxy(req)
