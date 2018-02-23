@@ -52,12 +52,6 @@ var _ = Describe("ResponseWriter tests", func() {
 	Context("Export API Gateway proxy response", func() {
 		noHeaderResponse := NewProxyResponseWriter()
 
-		It("Refuses responses with no headers", func() {
-			_, err := noHeaderResponse.GetProxyResponse()
-			Expect(err).ToNot(BeNil())
-			Expect("No headers generated for response").To(Equal(err.Error()))
-		})
-
 		emtpyResponse := NewProxyResponseWriter()
 		emtpyResponse.Header().Add("Content-Type", "application/json")
 
