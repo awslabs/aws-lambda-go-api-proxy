@@ -22,12 +22,12 @@ const DefaultServerAddress = "https://aws-serverless-go-api.com"
 // APIGwContextHeader is the custom header key used to store the
 // API Gateway context. To access the Context properties use the
 // GetAPIGatewayContext method of the RequestAccessor object.
-const APIGwContextHeader = "X-GinLambda-ApiGw-Context"
+const APIGwContextHeader = "X-GoLambdaProxy-ApiGw-Context"
 
 // APIGwStageVarsHeader is the custom header key used to store the
 // API Gateway stage variables. To access the stage variable values
 // use the GetAPIGatewayStageVars method of the RequestAccessor object.
-const APIGwStageVarsHeader = "X-GinLambda-ApiGw-StageVars"
+const APIGwStageVarsHeader = "X-GoLambdaProxy-ApiGw-StageVars"
 
 // RequestAccessor objects give access to custom API Gateway properties
 // in the request.
