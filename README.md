@@ -10,10 +10,10 @@ $ go get github.com/aws/aws-lambda-go/events
 $ go get github.com/aws/aws-lambda-go/lambda
 
 # Next, we install the core library
-$ go get github.com/awslabs/aws-lambda-go-api-proxy
+$ go get github.com/awslabs/aws-lambda-go-api-proxy/...
 ```
 
-Following the instructions from the [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/go-programming-model-handler-types.html), we need to declare a `Handler` method for our main package. We will declare a `ginlambda.GinLambda` object
+Following the instructions from the [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/go-programming-model-handler-types.html), we need to declare a `Handler` method for our main package. We will declare a `ginadapter.GinLambda` object
 in the global scope, initialized once it in the Handler with all its API methods, and then use the `Proxy` method to translate requests and responses
 
 ```go
@@ -56,6 +56,9 @@ func main() {
 }
 ```
 
+## Other frameworks
+This package also supports [Negroni](https://github.com/urfave/negroni), [GorillaMux](https://github.com/gorilla/mux), and plain old `HandlerFunc` - take a look at the code in their respective sub-directories. All packages implement the `Proxy` method exactly like our Gin sample above. 
+
 ## Deploying the sample
 We have included a [SAM template](https://github.com/awslabs/serverless-application-model) with our sample application. You can use the [AWS CLI](https://aws.amazon.com/cli/) to quickly deploy the application in your AWS account. 
 
@@ -94,9 +97,9 @@ stageVarValue := apiGwStageVars["MyStageVar"]
 ```
 
 ## Supporting other frameworks
-The `aws-lambda-go-api-proxy` library includes two package: `ginlambda` and `core`. The `ginlambda` package contains the [Gin](https://gin-gonic.github.io/gin/)-specific implementation of the library. The `core` package, contains utility methods and interfaces to translate API Gateway proxy events into Go's default `http.Request` and `http.ResponseWriter` objects.
+The `aws-lambda-go-api-proxy`, alongside the various adapters, declares a `core` package. The `core` package, contains utility methods and interfaces to translate API Gateway proxy events into Go's default `http.Request` and `http.ResponseWriter` objects.
 
-You can see that the [`ginlambda.go`](gin/ginlambda.go) file extends the `RequestAccesor` struct defined in the [`request.go`](core/request.go) file.  `RequestAccessor` gives you access to the `ProxyEventToHTTPRequest()` method.
+You can see that the [`ginlambda.go`](gin/adapter.go) file extends the `RequestAccesor` struct defined in the [`request.go`](core/request.go) file.  `RequestAccessor` gives you access to the `ProxyEventToHTTPRequest()` method.
 
 The `GinLambda` object is initialized with an instance of `gin.Engine`. `gin.Engine` implements methods defined in the `http.Handler` interface.
 
