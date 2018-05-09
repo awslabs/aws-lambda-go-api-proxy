@@ -3,6 +3,7 @@
 package core
 
 import (
+	"bytes"
 	"encoding/base64"
 	"errors"
 	"net/http"
@@ -17,7 +18,7 @@ const defaultStatusCode = -1
 // necessary to return an events.APIGatewayProxyResponse object
 type ProxyResponseWriter struct {
 	headers http.Header
-	body    []byte
+	body    bytes.Buffer
 	status  int
 }
 
@@ -41,12 +42,11 @@ func (r *ProxyResponseWriter) Header() http.Header {
 // was set before with the WriteHeader method it sets the status
 // for the response to 200 OK.
 func (r *ProxyResponseWriter) Write(body []byte) (int, error) {
-	r.body = body
 	if r.status == -1 {
 		r.status = http.StatusOK
 	}
 
-	return len(body), nil
+	return (&r.body).Write(body)
 }
 
 // WriteHeader sets a status code for the response. This method is used
@@ -67,10 +67,12 @@ func (r *ProxyResponseWriter) GetProxyResponse() (events.APIGatewayProxyResponse
 	var output string
 	isBase64 := false
 
-	if utf8.Valid(r.body) {
-		output = string(r.body)
+	bb := (&r.body).Bytes()
+
+	if utf8.Valid(bb) {
+		output = string(bb)
 	} else {
-		output = base64.StdEncoding.EncodeToString(r.body)
+		output = base64.StdEncoding.EncodeToString(bb)
 		isBase64 = true
 	}
 
