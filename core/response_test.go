@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"math/rand"
 	"net/http"
+	"strings"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -49,6 +50,50 @@ var _ = Describe("ResponseWriter tests", func() {
 		})
 	})
 
+	Context("Automatically set response content type", func() {
+		xmlBodyContent := "<?xml version=\"1.0\" encoding=\"UTF-8\"?><note><to>Tove</to><from>Jani</from><heading>Reminder</heading><body>Don't forget me this weekend!</body></note>"
+		htmlBodyContent := " <!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Title of the document</title></head><body>Content of the document......</body></html>"
+		It("Does not set the content type if it's already set", func() {
+			resp := NewProxyResponseWriter()
+			resp.Header().Add("Content-Type", "application/json")
+
+			resp.Write([]byte(xmlBodyContent))
+
+			Expect("application/json").To(Equal(resp.Header().Get("Content-Type")))
+			proxyResp, err := resp.GetProxyResponse()
+			Expect(err).To(BeNil())
+			Expect(1).To(Equal(len(proxyResp.Headers)))
+			Expect("application/json").To(Equal(proxyResp.Headers["Content-Type"]))
+			Expect(xmlBodyContent).To(Equal(proxyResp.Body))
+		})
+
+		It("Sets the conte type to text/xml given the body", func() {
+			resp := NewProxyResponseWriter()
+			resp.Write([]byte(xmlBodyContent))
+
+			Expect("").ToNot(Equal(resp.Header().Get("Content-Type")))
+			Expect(true).To(Equal(strings.HasPrefix(resp.Header().Get("Content-Type"), "text/xml;")))
+			proxyResp, err := resp.GetProxyResponse()
+			Expect(err).To(BeNil())
+			Expect(1).To(Equal(len(proxyResp.Headers)))
+			Expect(true).To(Equal(strings.HasPrefix(proxyResp.Headers["Content-Type"], "text/xml;")))
+			Expect(xmlBodyContent).To(Equal(proxyResp.Body))
+		})
+
+		It("Sets the conte type to text/html given the body", func() {
+			resp := NewProxyResponseWriter()
+			resp.Write([]byte(htmlBodyContent))
+
+			Expect("").ToNot(Equal(resp.Header().Get("Content-Type")))
+			Expect(true).To(Equal(strings.HasPrefix(resp.Header().Get("Content-Type"), "text/html;")))
+			proxyResp, err := resp.GetProxyResponse()
+			Expect(err).To(BeNil())
+			Expect(1).To(Equal(len(proxyResp.Headers)))
+			Expect(true).To(Equal(strings.HasPrefix(proxyResp.Headers["Content-Type"], "text/html;")))
+			Expect(htmlBodyContent).To(Equal(proxyResp.Body))
+		})
+	})
+
 	Context("Export API Gateway proxy response", func() {
 		emtpyResponse := NewProxyResponseWriter()
 		emtpyResponse.Header().Add("Content-Type", "application/json")
@@ -70,7 +115,7 @@ var _ = Describe("ResponseWriter tests", func() {
 			Expect("hello").To(Equal(proxyResponse.Body))
 			Expect(http.StatusOK).To(Equal(proxyResponse.StatusCode))
 			Expect(1).To(Equal(len(proxyResponse.Headers)))
-			Expect("text/plain").To(Equal(proxyResponse.Headers["Content-Type"]))
+			Expect(true).To(Equal(strings.HasPrefix(proxyResponse.Headers["Content-Type"], "text/plain")))
 			Expect(proxyResponse.IsBase64Encoded).To(BeFalse())
 		})
 

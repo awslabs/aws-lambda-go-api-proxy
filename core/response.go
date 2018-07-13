@@ -13,6 +13,7 @@ import (
 )
 
 const defaultStatusCode = -1
+const contentTypeHeaderKey = "Content-Type"
 
 // ProxyResponseWriter implements http.ResponseWriter and adds the method
 // necessary to return an events.APIGatewayProxyResponse object
@@ -44,6 +45,14 @@ func (r *ProxyResponseWriter) Header() http.Header {
 func (r *ProxyResponseWriter) Write(body []byte) (int, error) {
 	if r.status == -1 {
 		r.status = http.StatusOK
+	}
+
+	// if the content type header is not set when we write the body we try to
+	// detect one and set it by default. If the content type cannot be detected
+	// it is automatically set to "application/octet-stream" by the
+	// DetectContentType method
+	if r.Header().Get(contentTypeHeaderKey) == "" {
+		r.Header().Add(contentTypeHeaderKey, http.DetectContentType(body))
 	}
 
 	return (&r.body).Write(body)
