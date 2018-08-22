@@ -9,12 +9,12 @@ import (
 
 type HandlerFuncAdapter struct {
 	core.RequestAccessor
-	handlerFunc http.HandlerFunc
+	handlerFunc http.Handler
 }
 
-func New(handlerFunc http.HandlerFunc) *HandlerFuncAdapter {
+func New(handler http.Handler) *HandlerFuncAdapter {
 	return &HandlerFuncAdapter{
-		handlerFunc: handlerFunc,
+		handlerFunc: handler,
 	}
 }
 
