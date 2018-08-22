@@ -9,12 +9,18 @@ import (
 
 type HandlerFuncAdapter struct {
 	core.RequestAccessor
-	handlerFunc http.Handler
+	handler http.Handler
 }
 
-func New(handler http.Handler) *HandlerFuncAdapter {
+func New(handlerFunc http.HandlerFunc) *HandlerFuncAdapter {
 	return &HandlerFuncAdapter{
-		handlerFunc: handler,
+		handler: handlerFunc,
+	}
+}
+
+func NewHandler(handler http.Handler) *HandlerFuncAdapter {
+	return &HandlerFuncAdapter{
+		handler: handler,
 	}
 }
 
@@ -25,7 +31,7 @@ func (h *HandlerFuncAdapter) Proxy(event events.APIGatewayProxyRequest) (events.
 	}
 
 	w := core.NewProxyResponseWriter()
-	h.handlerFunc.ServeHTTP(http.ResponseWriter(w), req)
+	h.handler.ServeHTTP(http.ResponseWriter(w), req)
 
 	resp, err := w.GetProxyResponse()
 	if err != nil {
