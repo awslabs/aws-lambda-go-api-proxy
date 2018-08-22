@@ -12,24 +12,17 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type handler struct{}
-
-func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("unfortunately-required-header", "")
-	fmt.Fprintf(w, "Go Lambda!!")
-}
-
 var _ = Describe("HandlerFuncAdapter tests", func() {
 	Context("Simple ping request", func() {
 		It("Proxies the event correctly", func() {
 			log.Println("Starting test")
 
-			handlerFunc := func(w http.ResponseWriter, req *http.Request) {
+			handler := func(w http.ResponseWriter, req *http.Request) {
 				w.Header().Add("unfortunately-required-header", "")
 				fmt.Fprintf(w, "Go Lambda!!")
 			}
 
-			adapter := handlerfunc.New(handlerFunc)
+			adapter := handlerfunc.New(handler)
 
 			req := events.APIGatewayProxyRequest{
 				Path:       "/ping",
