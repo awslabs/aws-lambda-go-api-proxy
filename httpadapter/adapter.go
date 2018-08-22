@@ -1,4 +1,4 @@
-package handlerfunc
+package httpadapter
 
 import (
 	"net/http"
@@ -7,18 +7,18 @@ import (
 	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 )
 
-type HandlerFuncAdapter struct {
+type HandlerAdapter struct {
 	core.RequestAccessor
 	handler http.Handler
 }
 
-func New(handlerFunc http.HandlerFunc) *HandlerFuncAdapter {
-	return &HandlerFuncAdapter{
-		handler: handlerFunc,
+func New(handler http.Handler) *HandlerAdapter {
+	return &HandlerAdapter{
+		handler: handler,
 	}
 }
 
-func (h *HandlerFuncAdapter) Proxy(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (h *HandlerAdapter) Proxy(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	req, err := h.ProxyEventToHTTPRequest(event)
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
