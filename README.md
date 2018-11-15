@@ -28,25 +28,22 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var initialized = false
 var ginLambda *ginadapter.GinLambda
 
-func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-
-	if !initialized {
-		// stdout and stderr are sent to AWS CloudWatch Logs
-		log.Printf("Gin cold start")
-		r := gin.Default()
-		r.GET("/ping", func(c *gin.Context) {
-			c.JSON(200, gin.H{
-				"message": "pong",
-			})
+func init() {
+	// stdout and stderr are sent to AWS CloudWatch Logs
+	log.Printf("Gin cold start")
+	r := gin.Default()
+	r.GET("/ping", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "pong",
 		})
+	})
 
-		ginLambda = ginadapter.New(r)
-		initialized = true
-	}
+	ginLambda = ginadapter.New(r)
+}
 
+func Handler(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// If no name is provided in the HTTP request body, throw an error
 	return ginLambda.Proxy(req)
 }
@@ -57,10 +54,10 @@ func main() {
 ```
 
 ## Other frameworks
-This package also supports [Negroni](https://github.com/urfave/negroni), [GorillaMux](https://github.com/gorilla/mux), and plain old `HandlerFunc` - take a look at the code in their respective sub-directories. All packages implement the `Proxy` method exactly like our Gin sample above. 
+This package also supports [Negroni](https://github.com/urfave/negroni), [GorillaMux](https://github.com/gorilla/mux), and plain old `HandlerFunc` - take a look at the code in their respective sub-directories. All packages implement the `Proxy` method exactly like our Gin sample above.
 
 ## Deploying the sample
-We have included a [SAM template](https://github.com/awslabs/serverless-application-model) with our sample application. You can use the [AWS CLI](https://aws.amazon.com/cli/) to quickly deploy the application in your AWS account. 
+We have included a [SAM template](https://github.com/awslabs/serverless-application-model) with our sample application. You can use the [AWS CLI](https://aws.amazon.com/cli/) to quickly deploy the application in your AWS account.
 
 First, build the sample application by running `make` from the `aws-lambda-go-api-proxy` directory.
 
@@ -103,12 +100,12 @@ You can see that the [`ginlambda.go`](gin/adapter.go) file extends the `RequestA
 
 The `GinLambda` object is initialized with an instance of `gin.Engine`. `gin.Engine` implements methods defined in the `http.Handler` interface.
 
-The `Proxy` method of the `GinLambda` object simply receives the `events.APIGatewayProxyRequest` object and uses the `ProxyEventToHTTPRequest()` method to convert it into an `http.Request` object. Next, it creates a new `ProxyResponseWriter` object (defined in the [`response.go`](core/response.go)) file and passes both request and response writer to the `ServeHTTP` method of the `gin.Engine`. 
+The `Proxy` method of the `GinLambda` object simply receives the `events.APIGatewayProxyRequest` object and uses the `ProxyEventToHTTPRequest()` method to convert it into an `http.Request` object. Next, it creates a new `ProxyResponseWriter` object (defined in the [`response.go`](core/response.go)) file and passes both request and response writer to the `ServeHTTP` method of the `gin.Engine`.
 
-The `ProxyResponseWriter` exports a method called `GetProxyResponse()` to generate an `events.APIGatewayProxyResponse` object from the data written to the response writer. 
+The `ProxyResponseWriter` exports a method called `GetProxyResponse()` to generate an `events.APIGatewayProxyResponse` object from the data written to the response writer.
 
 Support for frameworks other than Gin can rely on the same methods from the `core` package and swap the `gin.Engine` object for the relevant framework's object.
 
 ## License
 
-This library is licensed under the Apache 2.0 License. 
+This library is licensed under the Apache 2.0 License.
