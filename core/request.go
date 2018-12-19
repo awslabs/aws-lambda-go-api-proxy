@@ -11,10 +11,17 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 )
+
+// CustomHostVariable is the name of the environment variable that contains
+// the custom hostname for the request. If this variable is not set the framework
+// reverts to `DefaultServerAddress`. The value for a custom host should include
+// a protocol: http://my-custom.host.com
+const CustomHostVariable = "GO_API_HOST"
 
 // DefaultServerAddress is prepended to the path of each incoming reuqest
 const DefaultServerAddress = "https://aws-serverless-go-api.com"
@@ -128,13 +135,17 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(req events.APIGatewayProxyRequ
 	if r.stripBasePath != "" && len(r.stripBasePath) > 1 {
 		if strings.HasPrefix(path, r.stripBasePath) {
 			path = strings.Replace(path, r.stripBasePath, "", 1)
-			if !strings.HasPrefix(path, "/") {
-				path = "/" + path
-			}
 		}
 	}
+	if !strings.HasPrefix(path, "/") {
+		path = "/" + path
+	}
+	serverAddress := DefaultServerAddress
+	if customAddress, ok := os.LookupEnv(CustomHostVariable); ok {
+		serverAddress = customAddress
+	}
 
-	path = DefaultServerAddress + path
+	path = serverAddress + path
 
 	httpRequest, err := http.NewRequest(
 		strings.ToUpper(req.HTTPMethod),

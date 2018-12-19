@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"io/ioutil"
 	"math/rand"
+	"os"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/core"
@@ -148,6 +149,42 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect(stageVars["var2"]).ToNot(BeNil())
 			Expect("value1").To(Equal(stageVars["var1"]))
 			Expect("value2").To(Equal(stageVars["var2"]))
+		})
+
+		It("Populates the default hostname correctly", func() {
+			basicRequest := getProxyRequest("orders", "GET")
+			accessor := core.RequestAccessor{}
+			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
+			Expect(err).To(BeNil())
+
+			Expect(core.DefaultServerAddress).To(Equal("https://" + httpReq.Host))
+			Expect(core.DefaultServerAddress).To(Equal("https://" + httpReq.URL.Host))
+		})
+
+		It("Uses a custom hostname", func() {
+			myCustomHost := "http://my-custom-host.com"
+			os.Setenv(core.CustomHostVariable, myCustomHost)
+			basicRequest := getProxyRequest("orders", "GET")
+			accessor := core.RequestAccessor{}
+			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
+			Expect(err).To(BeNil())
+
+			Expect(myCustomHost).To(Equal("http://" + httpReq.Host))
+			Expect(myCustomHost).To(Equal("http://" + httpReq.URL.Host))
+			os.Unsetenv(core.CustomHostVariable)
+		})
+
+		It("Strips terminating / from hostname", func() {
+			myCustomHost := "http://my-custom-host.com"
+			os.Setenv(core.CustomHostVariable, myCustomHost+"/")
+			basicRequest := getProxyRequest("orders", "GET")
+			accessor := core.RequestAccessor{}
+			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
+			Expect(err).To(BeNil())
+
+			Expect(myCustomHost).To(Equal("http://" + httpReq.Host))
+			Expect(myCustomHost).To(Equal("http://" + httpReq.URL.Host))
+			os.Unsetenv(core.CustomHostVariable)
 		})
 	})
 })

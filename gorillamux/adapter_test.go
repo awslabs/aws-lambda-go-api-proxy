@@ -2,7 +2,6 @@ package gorillamux_test
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -16,8 +15,6 @@ import (
 var _ = Describe("GorillaMuxAdapter tests", func() {
 	Context("Simple ping request", func() {
 		It("Proxies the event correctly", func() {
-			log.Println("Starting test")
-
 			homeHandler := func(w http.ResponseWriter, req *http.Request) {
 				w.Header().Add("unfortunately-required-header", "")
 				fmt.Fprintf(w, "Home Page")
