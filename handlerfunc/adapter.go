@@ -1,6 +1,7 @@
 package handlerfunc
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -18,14 +19,14 @@ func New(handlerFunc http.HandlerFunc) *HandlerFuncAdapter {
 	}
 }
 
-func (h *HandlerFuncAdapter) Proxy(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (h *HandlerFuncAdapter) Proxy(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	req, err := h.ProxyEventToHTTPRequest(event)
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	w := core.NewProxyResponseWriter()
-	h.handlerFunc.ServeHTTP(http.ResponseWriter(w), req)
+	h.handlerFunc.ServeHTTP(http.ResponseWriter(w), req.WithContext(ctx))
 
 	resp, err := w.GetProxyResponse()
 	if err != nil {

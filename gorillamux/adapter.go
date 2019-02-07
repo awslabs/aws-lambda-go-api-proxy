@@ -1,6 +1,7 @@
 package gorillamux
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -19,14 +20,14 @@ func New(router *mux.Router) *GorillaMuxAdapter {
 	}
 }
 
-func (h *GorillaMuxAdapter) Proxy(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (h *GorillaMuxAdapter) Proxy(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	req, err := h.ProxyEventToHTTPRequest(event)
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	w := core.NewProxyResponseWriter()
-	h.router.ServeHTTP(http.ResponseWriter(w), req)
+	h.router.ServeHTTP(http.ResponseWriter(w), req.WithContext(ctx))
 
 	resp, err := w.GetProxyResponse()
 	if err != nil {

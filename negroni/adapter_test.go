@@ -1,6 +1,7 @@
 package negroniadapter_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -42,7 +43,7 @@ var _ = Describe("NegroniAdapter tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			homePageResp, homePageReqErr := adapter.Proxy(homePageReq)
+			homePageResp, homePageReqErr := adapter.Proxy(context.Background(), homePageReq)
 
 			Expect(homePageReqErr).To(BeNil())
 			Expect(homePageResp.StatusCode).To(Equal(200))
@@ -53,7 +54,7 @@ var _ = Describe("NegroniAdapter tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			productsPageResp, productsPageReqErr := adapter.Proxy(productsPageReq)
+			productsPageResp, productsPageReqErr := adapter.Proxy(context.Background(), productsPageReq)
 
 			Expect(productsPageReqErr).To(BeNil())
 			Expect(productsPageResp.StatusCode).To(Equal(200))
