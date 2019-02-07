@@ -130,6 +130,23 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(req events.APIGatewayProxyRequ
 			queryCnt++
 		}
 	}
+	if len(req.MultiValueQueryStringParameters) > 0 {
+		queryDelim := "&"
+		queryStart := false
+		if queryString == "" {
+			queryDelim = "?"
+			queryStart = true
+		}
+		for q, l := range req.MultiValueQueryStringParameters {
+			for _, v := range l {
+				queryString += queryDelim + url.QueryEscape(q) + "=" + url.QueryEscape(v)
+				if queryStart {
+					queryDelim = "&"
+					queryStart = false
+				}
+			}
+		}
+	}
 
 	path := req.Path
 	if r.stripBasePath != "" && len(r.stripBasePath) > 1 {
