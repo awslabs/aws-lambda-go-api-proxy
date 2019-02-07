@@ -21,7 +21,7 @@ func New(handlerFunc http.HandlerFunc) *HandlerFuncAdapter {
 func (h *HandlerFuncAdapter) Proxy(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	req, err := h.ProxyEventToHTTPRequest(event)
 	if err != nil {
-		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
+		return core.InternalServerError(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	w := core.NewProxyResponseWriter()
@@ -29,7 +29,7 @@ func (h *HandlerFuncAdapter) Proxy(event events.APIGatewayProxyRequest) (events.
 
 	resp, err := w.GetProxyResponse()
 	if err != nil {
-		return core.GatewayTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
+		return core.InternalServerError(), core.NewLoggedError("Error while generating proxy response: %v", err)
 	}
 
 	return resp, nil

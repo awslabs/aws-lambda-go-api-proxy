@@ -34,7 +34,7 @@ func (g *ChiLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayP
 	chiRequest, err := g.ProxyEventToHTTPRequest(req)
 
 	if err != nil {
-		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
+		return core.InternalServerError(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	respWriter := core.NewProxyResponseWriter()
@@ -42,7 +42,7 @@ func (g *ChiLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayP
 
 	proxyResponse, err := respWriter.GetProxyResponse()
 	if err != nil {
-		return core.GatewayTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
+		return core.InternalServerError(), core.NewLoggedError("Error while generating proxy response: %v", err)
 	}
 
 	return proxyResponse, nil
