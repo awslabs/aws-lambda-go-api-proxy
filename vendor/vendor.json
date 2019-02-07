@@ -15,6 +15,12 @@
 			"revisionTime": "2019-01-29T19:04:57Z"
 		},
 		{
+			"checksumSHA1": "R5cnUZPkb0MPZnK822yvu4qlTXQ=",
+			"path": "github.com/aws/aws-lambda-go/lambda/handlertrace",
+			"revision": "dcf76fe64fb68bc66dd3522c904ccf5ff1b2710a",
+			"revisionTime": "2019-01-29T19:04:57Z"
+		},
+		{
 			"checksumSHA1": "d4ehJWLS4YsqFG825pgwdvKDB6A=",
 			"path": "github.com/aws/aws-lambda-go/lambda/messages",
 			"revision": "dcf76fe64fb68bc66dd3522c904ccf5ff1b2710a",
