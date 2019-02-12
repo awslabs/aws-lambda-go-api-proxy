@@ -58,9 +58,9 @@ var _ = Describe("RequestAccessor tests", func() {
 		})
 
 		qsRequest := getProxyRequest("/hello", "GET")
-		qsRequest.QueryStringParameters = map[string]string{
-			"hello": "1",
-			"world": "2",
+		qsRequest.MultiValueQueryStringParameters = map[string][]string{
+			"hello": {"1"},
+			"world": {"2", "3"},
 		}
 		It("Populates query string correctly", func() {
 			httpReq, err := accessor.ProxyEventToHTTPRequest(qsRequest)
@@ -73,65 +73,10 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect(query["hello"]).ToNot(BeNil())
 			Expect(query["world"]).ToNot(BeNil())
 			Expect(1).To(Equal(len(query["hello"])))
-			Expect(1).To(Equal(len(query["world"])))
-			Expect("1").To(Equal(query["hello"][0]))
-			Expect("2").To(Equal(query["world"][0]))
-		})
-
-		mvqsRequest := getProxyRequest("/hello", "GET")
-		mvqsRequest.MultiValueQueryStringParameters = map[string][]string{
-			"hello": {"1", "2"},
-			"world": {"3", "4"},
-		}
-		It("Populates multi value query string correctly", func() {
-			httpReq, err := accessor.ProxyEventToHTTPRequest(mvqsRequest)
-			Expect(err).To(BeNil())
-			Expect("/hello").To(Equal(httpReq.URL.Path))
-			Expect("GET").To(Equal(httpReq.Method))
-
-			query := httpReq.URL.Query()
-			Expect(2).To(Equal(len(query)))
-			Expect(query["hello"]).ToNot(BeNil())
-			Expect(query["world"]).ToNot(BeNil())
-			Expect(2).To(Equal(len(query["hello"])))
 			Expect(2).To(Equal(len(query["world"])))
 			Expect("1").To(Equal(query["hello"][0]))
-			Expect("2").To(Equal(query["hello"][1]))
-			Expect("3").To(Equal(query["world"][0]))
-			Expect("4").To(Equal(query["world"][1]))
-		})
-
-		qsAndMVQSRequest := getProxyRequest("/hello", "GET")
-		qsAndMVQSRequest.QueryStringParameters = map[string]string{
-			"hello1": "1",
-			"world1": "2",
-		}
-		qsAndMVQSRequest.MultiValueQueryStringParameters = map[string][]string{
-			"hello2": {"3", "4"},
-			"world2": {"5", "6"},
-		}
-		It("Populates query string and multi value query string correctly", func() {
-			httpReq, err := accessor.ProxyEventToHTTPRequest(qsAndMVQSRequest)
-			Expect(err).To(BeNil())
-			Expect("/hello").To(Equal(httpReq.URL.Path))
-			Expect("GET").To(Equal(httpReq.Method))
-
-			query := httpReq.URL.Query()
-			Expect(4).To(Equal(len(query)))
-			Expect(query["hello1"]).ToNot(BeNil())
-			Expect(query["world1"]).ToNot(BeNil())
-			Expect(query["hello2"]).ToNot(BeNil())
-			Expect(query["world2"]).ToNot(BeNil())
-			Expect(1).To(Equal(len(query["hello1"])))
-			Expect(1).To(Equal(len(query["world1"])))
-			Expect(2).To(Equal(len(query["hello2"])))
-			Expect(2).To(Equal(len(query["world2"])))
-			Expect("1").To(Equal(query["hello1"][0]))
-			Expect("2").To(Equal(query["world1"][0]))
-			Expect("3").To(Equal(query["hello2"][0]))
-			Expect("4").To(Equal(query["hello2"][1]))
-			Expect("5").To(Equal(query["world2"][0]))
-			Expect("6").To(Equal(query["world2"][1]))
+			Expect("2").To(Equal(query["world"][0]))
+			Expect("3").To(Equal(query["world"][1]))
 		})
 
 		basePathRequest := getProxyRequest("/app1/orders", "GET")
