@@ -58,9 +58,9 @@ var _ = Describe("RequestAccessor tests", func() {
 		})
 
 		qsRequest := getProxyRequest("/hello", "GET")
-		qsRequest.QueryStringParameters = map[string]string{
-			"hello": "1",
-			"world": "2",
+		qsRequest.MultiValueQueryStringParameters = map[string][]string{
+			"hello": {"1"},
+			"world": {"2", "3"},
 		}
 		It("Populates query string correctly", func() {
 			httpReq, err := accessor.ProxyEventToHTTPRequest(qsRequest)
@@ -73,9 +73,10 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect(query["hello"]).ToNot(BeNil())
 			Expect(query["world"]).ToNot(BeNil())
 			Expect(1).To(Equal(len(query["hello"])))
-			Expect(1).To(Equal(len(query["world"])))
+			Expect(2).To(Equal(len(query["world"])))
 			Expect("1").To(Equal(query["hello"][0]))
 			Expect("2").To(Equal(query["world"][0]))
+			Expect("3").To(Equal(query["world"][1]))
 		})
 
 		basePathRequest := getProxyRequest("/app1/orders", "GET")

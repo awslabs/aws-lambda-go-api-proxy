@@ -3,28 +3,34 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "6nfly5ibFQnlDU6IpeFaZZ2q1w0=",
+			"checksumSHA1": "60T22joBzjxNa8yKzW0V4egimZI=",
 			"path": "github.com/aws/aws-lambda-go/events",
-			"revision": "5fea2b254568d4043f23d27471ae265cd33d3530",
-			"revisionTime": "2018-01-26T03:40:30Z"
+			"revision": "dcf76fe64fb68bc66dd3522c904ccf5ff1b2710a",
+			"revisionTime": "2019-01-29T19:04:57Z"
 		},
 		{
-			"checksumSHA1": "uI0hFuHj5Amsq+6TzWcczBIdWZY=",
+			"checksumSHA1": "trfV9u2UzDAypLfWLdFApLNWj0k=",
 			"path": "github.com/aws/aws-lambda-go/lambda",
-			"revision": "5fea2b254568d4043f23d27471ae265cd33d3530",
-			"revisionTime": "2018-01-26T03:40:30Z"
+			"revision": "dcf76fe64fb68bc66dd3522c904ccf5ff1b2710a",
+			"revisionTime": "2019-01-29T19:04:57Z"
+		},
+		{
+			"checksumSHA1": "R5cnUZPkb0MPZnK822yvu4qlTXQ=",
+			"path": "github.com/aws/aws-lambda-go/lambda/handlertrace",
+			"revision": "dcf76fe64fb68bc66dd3522c904ccf5ff1b2710a",
+			"revisionTime": "2019-01-29T19:04:57Z"
 		},
 		{
 			"checksumSHA1": "d4ehJWLS4YsqFG825pgwdvKDB6A=",
 			"path": "github.com/aws/aws-lambda-go/lambda/messages",
-			"revision": "5fea2b254568d4043f23d27471ae265cd33d3530",
-			"revisionTime": "2018-01-26T03:40:30Z"
+			"revision": "dcf76fe64fb68bc66dd3522c904ccf5ff1b2710a",
+			"revisionTime": "2019-01-29T19:04:57Z"
 		},
 		{
 			"checksumSHA1": "f9MhOwQHveaPVWO6trwfqHa+W0M=",
 			"path": "github.com/aws/aws-lambda-go/lambdacontext",
-			"revision": "5fea2b254568d4043f23d27471ae265cd33d3530",
-			"revisionTime": "2018-01-26T03:40:30Z"
+			"revision": "dcf76fe64fb68bc66dd3522c904ccf5ff1b2710a",
+			"revisionTime": "2019-01-29T19:04:57Z"
 		},
 		{
 			"checksumSHA1": "QeKwBtN2df+j+4stw3bQJ6yO4EY=",

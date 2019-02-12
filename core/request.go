@@ -118,19 +118,6 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(req events.APIGatewayProxyRequ
 		decodedBody = base64Body
 	}
 
-	queryString := ""
-	if len(req.QueryStringParameters) > 0 {
-		queryString = "?"
-		queryCnt := 0
-		for q := range req.QueryStringParameters {
-			if queryCnt > 0 {
-				queryString += "&"
-			}
-			queryString += url.QueryEscape(q) + "=" + url.QueryEscape(req.QueryStringParameters[q])
-			queryCnt++
-		}
-	}
-
 	path := req.Path
 	if r.stripBasePath != "" && len(r.stripBasePath) > 1 {
 		if strings.HasPrefix(path, r.stripBasePath) {
@@ -144,12 +131,24 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(req events.APIGatewayProxyRequ
 	if customAddress, ok := os.LookupEnv(CustomHostVariable); ok {
 		serverAddress = customAddress
 	}
-
 	path = serverAddress + path
+
+	if len(req.MultiValueQueryStringParameters) > 0 {
+		queryString := ""
+		for q, l := range req.MultiValueQueryStringParameters {
+			for _, v := range l {
+				if queryString != "" {
+					queryString += "&"
+				}
+				queryString += url.QueryEscape(q) + "=" + url.QueryEscape(v)
+			}
+		}
+		path += "?" + queryString
+	}
 
 	httpRequest, err := http.NewRequest(
 		strings.ToUpper(req.HTTPMethod),
-		path+queryString,
+		path,
 		bytes.NewReader(decodedBody),
 	)
 
