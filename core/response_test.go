@@ -62,12 +62,12 @@ var _ = Describe("ResponseWriter tests", func() {
 			Expect("application/json").To(Equal(resp.Header().Get("Content-Type")))
 			proxyResp, err := resp.GetProxyResponse()
 			Expect(err).To(BeNil())
-			Expect(1).To(Equal(len(proxyResp.Headers)))
-			Expect("application/json").To(Equal(proxyResp.Headers["Content-Type"]))
+			Expect(1).To(Equal(len(proxyResp.MultiValueHeaders)))
+			Expect("application/json").To(Equal(proxyResp.MultiValueHeaders["Content-Type"][0]))
 			Expect(xmlBodyContent).To(Equal(proxyResp.Body))
 		})
 
-		It("Sets the conte type to text/xml given the body", func() {
+		It("Sets the content type to text/xml given the body", func() {
 			resp := NewProxyResponseWriter()
 			resp.Write([]byte(xmlBodyContent))
 
@@ -75,12 +75,12 @@ var _ = Describe("ResponseWriter tests", func() {
 			Expect(true).To(Equal(strings.HasPrefix(resp.Header().Get("Content-Type"), "text/xml;")))
 			proxyResp, err := resp.GetProxyResponse()
 			Expect(err).To(BeNil())
-			Expect(1).To(Equal(len(proxyResp.Headers)))
-			Expect(true).To(Equal(strings.HasPrefix(proxyResp.Headers["Content-Type"], "text/xml;")))
+			Expect(1).To(Equal(len(proxyResp.MultiValueHeaders)))
+			Expect(true).To(Equal(strings.HasPrefix(proxyResp.MultiValueHeaders["Content-Type"][0], "text/xml;")))
 			Expect(xmlBodyContent).To(Equal(proxyResp.Body))
 		})
 
-		It("Sets the conte type to text/html given the body", func() {
+		It("Sets the content type to text/html given the body", func() {
 			resp := NewProxyResponseWriter()
 			resp.Write([]byte(htmlBodyContent))
 
@@ -88,8 +88,8 @@ var _ = Describe("ResponseWriter tests", func() {
 			Expect(true).To(Equal(strings.HasPrefix(resp.Header().Get("Content-Type"), "text/html;")))
 			proxyResp, err := resp.GetProxyResponse()
 			Expect(err).To(BeNil())
-			Expect(1).To(Equal(len(proxyResp.Headers)))
-			Expect(true).To(Equal(strings.HasPrefix(proxyResp.Headers["Content-Type"], "text/html;")))
+			Expect(1).To(Equal(len(proxyResp.MultiValueHeaders)))
+			Expect(true).To(Equal(strings.HasPrefix(proxyResp.MultiValueHeaders["Content-Type"][0], "text/html;")))
 			Expect(htmlBodyContent).To(Equal(proxyResp.Body))
 		})
 	})
@@ -114,8 +114,8 @@ var _ = Describe("ResponseWriter tests", func() {
 
 			Expect("hello").To(Equal(proxyResponse.Body))
 			Expect(http.StatusOK).To(Equal(proxyResponse.StatusCode))
-			Expect(1).To(Equal(len(proxyResponse.Headers)))
-			Expect(true).To(Equal(strings.HasPrefix(proxyResponse.Headers["Content-Type"], "text/plain")))
+			Expect(1).To(Equal(len(proxyResponse.MultiValueHeaders)))
+			Expect(true).To(Equal(strings.HasPrefix(proxyResponse.MultiValueHeaders["Content-Type"][0], "text/plain")))
 			Expect(proxyResponse.IsBase64Encoded).To(BeFalse())
 		})
 
@@ -138,9 +138,43 @@ var _ = Describe("ResponseWriter tests", func() {
 			Expect(base64.StdEncoding.EncodedLen(len(binaryBody))).To(Equal(len(proxyResponse.Body)))
 
 			Expect(base64.StdEncoding.EncodeToString(binaryBody)).To(Equal(proxyResponse.Body))
-			Expect(1).To(Equal(len(proxyResponse.Headers)))
-			Expect("application/octet-stream").To(Equal(proxyResponse.Headers["Content-Type"]))
+			Expect(1).To(Equal(len(proxyResponse.MultiValueHeaders)))
+			Expect("application/octet-stream").To(Equal(proxyResponse.MultiValueHeaders["Content-Type"][0]))
 			Expect(http.StatusAccepted).To(Equal(proxyResponse.StatusCode))
 		})
 	})
+
+	Context("Handle multi-value headers", func() {
+
+		It("Writes single-value headers correctly", func() {
+			response := NewProxyResponseWriter()
+			response.Header().Add("Content-Type", "application/json")
+			response.Write([]byte("hello"))
+			proxyResponse, err := response.GetProxyResponse()
+			Expect(err).To(BeNil())
+
+			// Headers are not written to `Headers` field
+			Expect(0).To(Equal(len(proxyResponse.Headers)))
+			Expect(1).To(Equal(len(proxyResponse.MultiValueHeaders["Content-Type"])))
+			Expect("application/json").To(Equal(proxyResponse.MultiValueHeaders["Content-Type"][0]))
+		})
+
+		It("Writes multi-value headers correctly", func() {
+			response := NewProxyResponseWriter()
+			response.Header().Add("Set-Cookie", "csrftoken=foobar")
+			response.Header().Add("Set-Cookie", "session_id=barfoo")
+			response.Write([]byte("hello"))
+			proxyResponse, err := response.GetProxyResponse()
+			Expect(err).To(BeNil())
+
+			// Headers are not written to `Headers` field
+			Expect(0).To(Equal(len(proxyResponse.Headers)))
+
+			// There are two headers here because Content-Type is always written implicitly
+			Expect(2).To(Equal(len(proxyResponse.MultiValueHeaders["Set-Cookie"])))
+			Expect("csrftoken=foobar").To(Equal(proxyResponse.MultiValueHeaders["Set-Cookie"][0]))
+			Expect("session_id=barfoo").To(Equal(proxyResponse.MultiValueHeaders["Set-Cookie"][1]))
+		})
+	})
+
 })

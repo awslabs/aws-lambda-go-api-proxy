@@ -66,7 +66,7 @@ func (r *ProxyResponseWriter) WriteHeader(status int) {
 
 // GetProxyResponse converts the data passed to the response writer into
 // an events.APIGatewayProxyResponse object.
-// Returns a populated proxy response object. If the reponse is invalid, for example
+// Returns a populated proxy response object. If the response is invalid, for example
 // has no headers or an invalid status code returns an error.
 func (r *ProxyResponseWriter) GetProxyResponse() (events.APIGatewayProxyResponse, error) {
 	if r.status == defaultStatusCode {
@@ -85,16 +85,10 @@ func (r *ProxyResponseWriter) GetProxyResponse() (events.APIGatewayProxyResponse
 		isBase64 = true
 	}
 
-	proxyHeaders := make(map[string]string)
-
-	for h := range r.headers {
-		proxyHeaders[h] = r.headers.Get(h)
-	}
-
 	return events.APIGatewayProxyResponse{
-		StatusCode:      r.status,
-		Headers:         proxyHeaders,
-		Body:            output,
-		IsBase64Encoded: isBase64,
+		StatusCode:        r.status,
+		MultiValueHeaders: http.Header(r.headers),
+		Body:              output,
+		IsBase64Encoded:   isBase64,
 	}, nil
 }
