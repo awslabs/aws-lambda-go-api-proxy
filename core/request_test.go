@@ -132,6 +132,11 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect("x").To(Equal(context.AccountID))
 			Expect("x").To(Equal(context.RequestID))
 			Expect("x").To(Equal(context.APIID))
+			proxyContext, ok := accessor.GetAPIGatewayProxyRequestContext(httpReq)
+			Expect(ok).To(BeTrue())
+			Expect("x").To(Equal(proxyContext.APIID))
+			Expect("x").To(Equal(proxyContext.RequestID))
+			Expect("x").To(Equal(proxyContext.APIID))
 			Expect("prod").To(Equal(context.Stage))
 		})
 

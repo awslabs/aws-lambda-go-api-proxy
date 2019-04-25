@@ -4,6 +4,7 @@ package core
 
 import (
 	"bytes"
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -174,6 +175,20 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(req events.APIGatewayProxyRequ
 	}
 	httpRequest.Header.Add(APIGwContextHeader, string(apiGwContext))
 	httpRequest.Header.Add(APIGwStageVarsHeader, string(stageVars))
+	httpRequest = httpRequest.WithContext(toContext(httpRequest.Context(), req.RequestContext))
 
 	return httpRequest, nil
 }
+
+func toContext(parent context.Context, gwContext events.APIGatewayProxyRequestContext) context.Context {
+	parent = context.WithValue(parent, ctxKey{}, gwContext)
+	return parent
+}
+
+// GetAPIGatewayProxyRequestContext retrieve APIGatewayProxyRequestContext from context.Context
+func (r *RequestAccessor) GetAPIGatewayProxyRequestContext(req *http.Request) (events.APIGatewayProxyRequestContext, bool) {
+	v, ok := req.Context().Value(ctxKey{}).(events.APIGatewayProxyRequestContext)
+	return v, ok
+}
+
+type ctxKey struct{}
