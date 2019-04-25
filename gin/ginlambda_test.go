@@ -1,6 +1,7 @@
 package ginadapter_test
 
 import (
+	"context"
 	"log"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -30,7 +31,7 @@ var _ = Describe("GinLambda tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			resp, err := adapter.Proxy(req)
+			resp, err := adapter.Proxy(context.Background(), req)
 
 			Expect(err).To(BeNil())
 			Expect(resp.StatusCode).To(Equal(200))

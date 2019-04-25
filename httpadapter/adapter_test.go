@@ -1,6 +1,7 @@
 package httpadapter_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -36,7 +37,7 @@ var _ = Describe("HTTPAdapter tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			resp, err := adapter.Proxy(req)
+			resp, err := adapter.Proxy(context.Background(), req)
 
 			Expect(err).To(BeNil())
 			Expect(resp.StatusCode).To(Equal(200))

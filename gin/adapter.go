@@ -4,6 +4,7 @@
 package ginadapter
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -30,7 +31,7 @@ func New(gin *gin.Engine) *GinLambda {
 // Proxy receives an API Gateway proxy event, transforms it into an http.Request
 // object, and sends it to the gin.Engine for routing.
 // It returns a proxy response object gneerated from the http.ResponseWriter.
-func (g *GinLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+func (g *GinLambda) Proxy(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	ginRequest, err := g.ProxyEventToHTTPRequest(req)
 
 	if err != nil {
@@ -38,7 +39,7 @@ func (g *GinLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayP
 	}
 
 	respWriter := core.NewProxyResponseWriter()
-	g.ginEngine.ServeHTTP(http.ResponseWriter(respWriter), ginRequest)
+	g.ginEngine.ServeHTTP(http.ResponseWriter(respWriter), ginRequest.WithContext(ctx))
 
 	proxyResponse, err := respWriter.GetProxyResponse()
 	if err != nil {
