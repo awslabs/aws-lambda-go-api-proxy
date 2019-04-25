@@ -30,7 +30,7 @@ const DefaultServerAddress = "https://aws-serverless-go-api.com"
 // APIGwContextHeader is the custom header key used to store the
 // API Gateway context. To access the Context properties use the
 // GetAPIGatewayContext method of the RequestAccessor object.
-//const APIGwContextHeader = "X-GoLambdaProxy-ApiGw-Context"
+const APIGwContextHeader = "X-GoLambdaProxy-ApiGw-Context"
 
 // APIGwStageVarsHeader is the custom header key used to store the
 // API Gateway stage variables. To access the stage variable values
@@ -44,15 +44,21 @@ type RequestAccessor struct {
 }
 
 // GetAPIGatewayContext extracts the API Gateway context object from a
-// request's context.
+// request's custom header.
 // Returns a populated events.APIGatewayProxyRequestContext object from
-// the request context.
+// the request.
 func (r *RequestAccessor) GetAPIGatewayContext(req *http.Request) (events.APIGatewayProxyRequestContext, error) {
-	v, ok := req.Context().Value(apiGatewayProxyRequestContextKey{}).(events.APIGatewayProxyRequestContext)
-	if !ok {
-		return events.APIGatewayProxyRequestContext{}, errors.New("No APIGatewayProxyRequestContext found in request")
+	if req.Header.Get(APIGwContextHeader) == "" {
+		return events.APIGatewayProxyRequestContext{}, errors.New("No context header in request")
 	}
-	return v, nil
+	context := events.APIGatewayProxyRequestContext{}
+	err := json.Unmarshal([]byte(req.Header.Get(APIGwContextHeader)), &context)
+	if err != nil {
+		log.Println("Erorr while unmarshalling context")
+		log.Println(err)
+		return events.APIGatewayProxyRequestContext{}, err
+	}
+	return context, nil
 }
 
 // GetAPIGatewayStageVars extracts the API Gateway stage variables from a
@@ -156,11 +162,18 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(req events.APIGatewayProxyRequ
 	for h := range req.Headers {
 		httpRequest.Header.Add(h, req.Headers[h])
 	}
+
+	apiGwContext, err := json.Marshal(req.RequestContext)
+	if err != nil {
+		log.Println("Could not Marshal API GW context for custom header")
+		return nil, err
+	}
 	stageVars, err := json.Marshal(req.StageVariables)
 	if err != nil {
 		log.Println("Could not marshal stage variables for custom header")
 		return nil, err
 	}
+	httpRequest.Header.Add(APIGwContextHeader, string(apiGwContext))
 	httpRequest.Header.Add(APIGwStageVarsHeader, string(stageVars))
 	httpRequest = httpRequest.WithContext(toContext(httpRequest, req.RequestContext))
 
@@ -168,7 +181,13 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(req events.APIGatewayProxyRequ
 }
 
 func toContext(req *http.Request, gwContext events.APIGatewayProxyRequestContext) context.Context {
-	return context.WithValue(req.Context(), apiGatewayProxyRequestContextKey{}, gwContext)
+	return context.WithValue(req.Context(), ctxKey{}, gwContext)
 }
 
-type apiGatewayProxyRequestContextKey struct{}
+// GetAPIGatewayContextFromContext retrieve APIGatewayProxyRequestContext from context.Context
+func (r *RequestAccessor) GetAPIGatewayContextFromContext(req *http.Request) (events.APIGatewayProxyRequestContext, bool) {
+	v, ok := req.Context().Value(ctxKey{}).(events.APIGatewayProxyRequestContext)
+	return v, ok
+}
+
+type ctxKey struct{}

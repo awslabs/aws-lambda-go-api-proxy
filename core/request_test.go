@@ -94,10 +94,8 @@ var _ = Describe("RequestAccessor tests", func() {
 		It("Populates context header correctly", func() {
 			httpReq, err := accessor.ProxyEventToHTTPRequest(contextRequest)
 			Expect(err).To(BeNil())
-			Expect(1).To(Equal(len(httpReq.Header)))
-			context, err := accessor.GetAPIGatewayContext(httpReq)
-			Expect(err).To(BeNil())
-			Expect(context).ToNot(BeNil())
+			Expect(2).To(Equal(len(httpReq.Header)))
+			Expect(httpReq.Header.Get(core.APIGwContextHeader)).ToNot(BeNil())
 		})
 	})
 
@@ -134,6 +132,11 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect("x").To(Equal(context.AccountID))
 			Expect("x").To(Equal(context.RequestID))
 			Expect("x").To(Equal(context.APIID))
+			proxyContext, ok := accessor.GetAPIGatewayContextFromContext(httpReq)
+			Expect(ok).To(BeTrue())
+			Expect("x").To(Equal(proxyContext.APIID))
+			Expect("x").To(Equal(proxyContext.RequestID))
+			Expect("x").To(Equal(proxyContext.APIID))
 			Expect("prod").To(Equal(context.Stage))
 		})
 
