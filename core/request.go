@@ -16,6 +16,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambdacontext"
 )
 
 // CustomHostVariable is the name of the environment variable that contains
@@ -105,11 +106,12 @@ func (r *RequestAccessor) StripBasePath(basePath string) string {
 
 // ProxyEventToHTTPRequest converts an API Gateway proxy event into an
 // http.Request object.
-// Returns the populated request with an additional two custom headers for the
-// stage variables and API Gateway context. To access these properties use
-// the GetAPIGatewayStageVars and GetAPIGatewayContext method of the RequestAccessor
-// object.
-func (r *RequestAccessor) ProxyEventToHTTPRequest(req events.APIGatewayProxyRequest) (*http.Request, error) {
+// Returns the populated request with:
+// 		* an additional two custom headers for the stage variables and API Gateway context.
+//      To access these properties use the GetAPIGatewayStageVars and GetAPIGatewayContext method of the RequestAccessor object.
+//    * lambda runtime context passed as well as APIGatewayProxyRequestContext as part of it's context under different keys.
+//      Access those using GetAPIGatewayContextFromContext and GetRuntimeContextFromContext methods of the RequestAccessor object.
+func (r *RequestAccessor) ProxyEventToHTTPRequest(ctx context.Context, req events.APIGatewayProxyRequest) (*http.Request, error) {
 	decodedBody := []byte(req.Body)
 	if req.IsBase64Encoded {
 		base64Body, err := base64.StdEncoding.DecodeString(req.Body)
@@ -175,19 +177,28 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(req events.APIGatewayProxyRequ
 	}
 	httpRequest.Header.Add(APIGwContextHeader, string(apiGwContext))
 	httpRequest.Header.Add(APIGwStageVarsHeader, string(stageVars))
-	httpRequest = httpRequest.WithContext(toContext(httpRequest, req.RequestContext))
 
+	lc, _ := lambdacontext.FromContext(ctx)
+	ctx = context.WithValue(httpRequest.Context(), ctxKey{}, requestContext{lambdaRuntime: lc, gatewayProxy: req.RequestContext})
+	httpRequest = httpRequest.WithContext(ctx)
 	return httpRequest, nil
 }
 
-func toContext(req *http.Request, gwContext events.APIGatewayProxyRequestContext) context.Context {
-	return context.WithValue(req.Context(), ctxKey{}, gwContext)
+// GetAPIGatewayContextFromContext retrieve APIGatewayProxyRequestContext from context.Context
+func GetAPIGatewayContextFromContext(ctx context.Context) (events.APIGatewayProxyRequestContext, bool) {
+	v, ok := ctx.Value(ctxKey{}).(requestContext)
+	return v.gatewayProxy, ok
 }
 
-// GetAPIGatewayContextFromContext retrieve APIGatewayProxyRequestContext from context.Context
-func (r *RequestAccessor) GetAPIGatewayContextFromContext(req *http.Request) (events.APIGatewayProxyRequestContext, bool) {
-	v, ok := req.Context().Value(ctxKey{}).(events.APIGatewayProxyRequestContext)
-	return v, ok
+// GetRuntimeContextFromContext retrieve runtime context from context.Context
+func GetRuntimeContextFromContext(ctx context.Context) (*lambdacontext.LambdaContext, bool) {
+	v, ok := ctx.Value(ctxKey{}).(requestContext)
+	return v.lambdaRuntime, ok
 }
 
 type ctxKey struct{}
+
+type requestContext struct {
+	lambdaRuntime *lambdacontext.LambdaContext
+	gatewayProxy  events.APIGatewayProxyRequestContext
+}

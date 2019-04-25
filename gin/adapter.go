@@ -28,18 +28,22 @@ func New(gin *gin.Engine) *GinLambda {
 	return &GinLambda{ginEngine: gin}
 }
 
+func (g *GinLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return g.ProxyWithContext(context.Background(), req)
+}
+
 // Proxy receives an API Gateway proxy event, transforms it into an http.Request
 // object, and sends it to the gin.Engine for routing.
 // It returns a proxy response object gneerated from the http.ResponseWriter.
-func (g *GinLambda) Proxy(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	ginRequest, err := g.ProxyEventToHTTPRequest(req)
+func (g *GinLambda) ProxyWithContext(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	ginRequest, err := g.ProxyEventToHTTPRequest(ctx, req)
 
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	respWriter := core.NewProxyResponseWriter()
-	g.ginEngine.ServeHTTP(http.ResponseWriter(respWriter), ginRequest.WithContext(ctx))
+	g.ginEngine.ServeHTTP(http.ResponseWriter(respWriter), ginRequest)
 
 	proxyResponse, err := respWriter.GetProxyResponse()
 	if err != nil {

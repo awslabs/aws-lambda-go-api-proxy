@@ -8,7 +8,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 )
 
@@ -28,7 +28,7 @@ func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.API
 		ginLambda = ginadapter.New(r)
 	}
 
-	return ginLambda.Proxy(ctx, req)
+	return ginLambda.ProxyWithContext(ctx, req)
 }
 
 func main() {

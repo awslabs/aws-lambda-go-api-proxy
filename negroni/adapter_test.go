@@ -7,7 +7,7 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/awslabs/aws-lambda-go-api-proxy/negroni"
+	negroniadapter "github.com/awslabs/aws-lambda-go-api-proxy/negroni"
 	"github.com/urfave/negroni"
 
 	. "github.com/onsi/ginkgo"
@@ -43,7 +43,7 @@ var _ = Describe("NegroniAdapter tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			homePageResp, homePageReqErr := adapter.Proxy(context.Background(), homePageReq)
+			homePageResp, homePageReqErr := adapter.ProxyWithContext(context.Background(), homePageReq)
 
 			Expect(homePageReqErr).To(BeNil())
 			Expect(homePageResp.StatusCode).To(Equal(200))
@@ -54,7 +54,7 @@ var _ = Describe("NegroniAdapter tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			productsPageResp, productsPageReqErr := adapter.Proxy(context.Background(), productsPageReq)
+			productsPageResp, productsPageReqErr := adapter.Proxy(productsPageReq)
 
 			Expect(productsPageReqErr).To(BeNil())
 			Expect(productsPageResp.StatusCode).To(Equal(200))

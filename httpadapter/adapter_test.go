@@ -37,7 +37,12 @@ var _ = Describe("HTTPAdapter tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			resp, err := adapter.Proxy(context.Background(), req)
+			resp, err := adapter.ProxyWithContext(context.Background(), req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+
+			resp, err = adapter.Proxy(req)
 
 			Expect(err).To(BeNil())
 			Expect(resp.StatusCode).To(Equal(200))

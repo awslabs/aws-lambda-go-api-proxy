@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/awslabs/aws-lambda-go-api-proxy/chi"
+	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
 	"github.com/go-chi/chi"
 
 	. "github.com/onsi/ginkgo"
@@ -30,8 +30,12 @@ var _ = Describe("ChiLambda tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			resp, err := adapter.Proxy(context.Background(), req)
+			resp, err := adapter.ProxyWithContext(context.Background(), req)
 
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+
+			resp, err = adapter.Proxy(req)
 			Expect(err).To(BeNil())
 			Expect(resp.StatusCode).To(Equal(200))
 		})

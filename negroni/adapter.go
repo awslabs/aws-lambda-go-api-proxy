@@ -20,14 +20,18 @@ func New(n *negroni.Negroni) *NegroniAdapter {
 	}
 }
 
-func (h *NegroniAdapter) Proxy(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	req, err := h.ProxyEventToHTTPRequest(event)
+func (h *NegroniAdapter) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	return h.ProxyWithContext(context.Background(), req)
+}
+
+func (h *NegroniAdapter) ProxyWithContext(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	req, err := h.ProxyEventToHTTPRequest(ctx, event)
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	w := core.NewProxyResponseWriter()
-	h.n.ServeHTTP(http.ResponseWriter(w), req.WithContext(ctx))
+	h.n.ServeHTTP(http.ResponseWriter(w), req)
 
 	resp, err := w.GetProxyResponse()
 	if err != nil {
