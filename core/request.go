@@ -110,7 +110,7 @@ func (r *RequestAccessor) StripBasePath(basePath string) string {
 // 		* an additional two custom headers for the stage variables and API Gateway context.
 //      To access these properties use the GetAPIGatewayStageVars and GetAPIGatewayContext method of the RequestAccessor object.
 //    * lambda runtime context passed as well as APIGatewayProxyRequestContext as part of it's context under different keys.
-//      Access those using GetAPIGatewayContextFromContext and GetRuntimeContextFromContext methods of the RequestAccessor object.
+//      Access those using GetAPIGatewayContextFromContext and GetRuntimeContextFromContext methods in this package.
 func (r *RequestAccessor) ProxyEventToHTTPRequest(ctx context.Context, req events.APIGatewayProxyRequest) (*http.Request, error) {
 	decodedBody := []byte(req.Body)
 	if req.IsBase64Encoded {
@@ -179,24 +179,26 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(ctx context.Context, req event
 	httpRequest.Header.Add(APIGwStageVarsHeader, string(stageVars))
 
 	lc, _ := lambdacontext.FromContext(ctx)
-	ctx = context.WithValue(httpRequest.Context(), ctxKey{}, requestContext{lambdaRuntime: lc, gatewayProxy: req.RequestContext})
+	rc := requestContext{lambdaRuntime: lc, gatewayProxy: req.RequestContext}
+	ctx = context.WithValue(httpRequest.Context(), requestContextKey{},
+		rc)
 	httpRequest = httpRequest.WithContext(ctx)
 	return httpRequest, nil
 }
 
 // GetAPIGatewayContextFromContext retrieve APIGatewayProxyRequestContext from context.Context
 func GetAPIGatewayContextFromContext(ctx context.Context) (events.APIGatewayProxyRequestContext, bool) {
-	v, ok := ctx.Value(ctxKey{}).(requestContext)
+	v, ok := ctx.Value(requestContextKey{}).(requestContext)
 	return v.gatewayProxy, ok
 }
 
-// GetRuntimeContextFromContext retrieve runtime context from context.Context
+// GetRuntimeContextFromContext retrieve Lambda Runtime Context from context.Context
 func GetRuntimeContextFromContext(ctx context.Context) (*lambdacontext.LambdaContext, bool) {
-	v, ok := ctx.Value(ctxKey{}).(requestContext)
+	v, ok := ctx.Value(requestContextKey{}).(requestContext)
 	return v.lambdaRuntime, ok
 }
 
-type ctxKey struct{}
+type requestContextKey struct{}
 
 type requestContext struct {
 	lambdaRuntime *lambdacontext.LambdaContext
