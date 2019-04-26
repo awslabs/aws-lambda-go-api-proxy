@@ -23,15 +23,20 @@ func New(n *negroni.Negroni) *NegroniAdapter {
 // Proxy receives an API Gateway proxy event, transforms it into an http.Request
 // object, and sends it to the negroni.Negroni for routing.
 // It returns a proxy response object generated from the http.Handler.
-func (h *NegroniAdapter) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	return h.ProxyWithContext(context.Background(), req)
+func (h *NegroniAdapter) Proxy(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	req, err := h.ProxyEventToHTTPRequest(event)
+	return h.proxyInternal(req, err)
 }
 
 // ProxyWithContext receives context and an API Gateway proxy event,
 // transforms them into an http.Request object, and sends it to the negroni.Negroni for routing.
 // It returns a proxy response object generated from the http.ResponseWriter.
 func (h *NegroniAdapter) ProxyWithContext(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	req, err := h.RequestFromEvent(ctx, event)
+	req, err := h.EventToRequestWithContext(ctx, event)
+	return h.proxyInternal(req, err)
+}
+
+func (h *NegroniAdapter) proxyInternal(req *http.Request, err error) (events.APIGatewayProxyResponse, error) {
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
