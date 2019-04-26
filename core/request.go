@@ -180,7 +180,7 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(ctx context.Context, req event
 
 	lc, _ := lambdacontext.FromContext(ctx)
 	rc := requestContext{lambdaRuntime: lc, gatewayProxy: req.RequestContext}
-	ctx = context.WithValue(httpRequest.Context(), requestContextKey{},
+	ctx = context.WithValue(httpRequest.Context(), requestContextKey,
 		rc)
 	httpRequest = httpRequest.WithContext(ctx)
 	return httpRequest, nil
@@ -188,17 +188,19 @@ func (r *RequestAccessor) ProxyEventToHTTPRequest(ctx context.Context, req event
 
 // GetAPIGatewayContextFromContext retrieve APIGatewayProxyRequestContext from context.Context
 func GetAPIGatewayContextFromContext(ctx context.Context) (events.APIGatewayProxyRequestContext, bool) {
-	v, ok := ctx.Value(requestContextKey{}).(requestContext)
+	v, ok := ctx.Value(requestContextKey).(requestContext)
 	return v.gatewayProxy, ok
 }
 
 // GetRuntimeContextFromContext retrieve Lambda Runtime Context from context.Context
 func GetRuntimeContextFromContext(ctx context.Context) (*lambdacontext.LambdaContext, bool) {
-	v, ok := ctx.Value(requestContextKey{}).(requestContext)
+	v, ok := ctx.Value(requestContextKey).(requestContext)
 	return v.lambdaRuntime, ok
 }
 
-type requestContextKey struct{}
+type key struct{}
+
+var requestContextKey = &key{}
 
 type requestContext struct {
 	lambdaRuntime *lambdacontext.LambdaContext

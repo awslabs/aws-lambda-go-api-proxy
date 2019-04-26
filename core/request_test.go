@@ -7,6 +7,8 @@ import (
 	"math/rand"
 	"os"
 
+	"github.com/aws/aws-lambda-go/lambdacontext"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 
@@ -127,18 +129,42 @@ var _ = Describe("RequestAccessor tests", func() {
 			httpReq, err := accessor.ProxyEventToHTTPRequest(context.Background(), contextRequest)
 			Expect(err).To(BeNil())
 
-			context, err := accessor.GetAPIGatewayContext(httpReq)
+			headerContext, err := accessor.GetAPIGatewayContext(httpReq)
 			Expect(err).To(BeNil())
-			Expect(context).ToNot(BeNil())
-			Expect("x").To(Equal(context.AccountID))
-			Expect("x").To(Equal(context.RequestID))
-			Expect("x").To(Equal(context.APIID))
+			Expect(headerContext).ToNot(BeNil())
+			Expect("x").To(Equal(headerContext.AccountID))
+			Expect("x").To(Equal(headerContext.RequestID))
+			Expect("x").To(Equal(headerContext.APIID))
 			proxyContext, ok := core.GetAPIGatewayContextFromContext(httpReq.Context())
 			Expect(ok).To(BeTrue())
 			Expect("x").To(Equal(proxyContext.APIID))
 			Expect("x").To(Equal(proxyContext.RequestID))
 			Expect("x").To(Equal(proxyContext.APIID))
-			Expect("prod").To(Equal(context.Stage))
+			Expect("prod").To(Equal(proxyContext.Stage))
+			runtimeContext, ok := core.GetRuntimeContextFromContext(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect(runtimeContext).To(BeNil())
+
+			lambdaContext := lambdacontext.NewContext(context.Background(), &lambdacontext.LambdaContext{AwsRequestID: "abc123"})
+			httpReq, err = accessor.ProxyEventToHTTPRequest(lambdaContext, contextRequest)
+			Expect(err).To(BeNil())
+
+			headerContext, err = accessor.GetAPIGatewayContext(httpReq)
+			Expect(err).To(BeNil())
+			Expect(headerContext).ToNot(BeNil())
+			Expect("x").To(Equal(headerContext.AccountID))
+			Expect("x").To(Equal(headerContext.RequestID))
+			Expect("x").To(Equal(headerContext.APIID))
+			proxyContext, ok = core.GetAPIGatewayContextFromContext(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect("x").To(Equal(proxyContext.APIID))
+			Expect("x").To(Equal(proxyContext.RequestID))
+			Expect("x").To(Equal(proxyContext.APIID))
+			Expect("prod").To(Equal(proxyContext.Stage))
+			runtimeContext, ok = core.GetRuntimeContextFromContext(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect(runtimeContext).ToNot(BeNil())
+			Expect("abc123").To(Equal(runtimeContext.AwsRequestID))
 		})
 
 		It("Populates stage variables correctly", func() {
