@@ -108,29 +108,29 @@ func (r *RequestAccessor) StripBasePath(basePath string) string {
 // Returns the populated http request with additional two custom headers for the stage variables and API Gateway context.
 // To access these properties use the GetAPIGatewayStageVars and GetAPIGatewayContext method of the RequestAccessor object.
 func (r *RequestAccessor) ProxyEventToHTTPRequest(req events.APIGatewayProxyRequest) (*http.Request, error) {
-	httpRequest, err := r.RequestFromEvent(req)
+	httpRequest, err := r.EventToRequest(req)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return AddToHeader(httpRequest, req)
+	return addToHeader(httpRequest, req)
 }
 
 // EventToRequestWithContext converts an API Gateway proxy event and context into an http.Request object.
 // Returns the populated http request with lambda context, stage variables and APIGatewayProxyRequestContext as part of its context.
 // Access those using GetAPIGatewayContextFromContext, GetStageVarsFromContext and GetRuntimeContextFromContext functions in this package.
 func (r *RequestAccessor) EventToRequestWithContext(ctx context.Context, req events.APIGatewayProxyRequest) (*http.Request, error) {
-	httpRequest, err := r.RequestFromEvent(req)
+	httpRequest, err := r.EventToRequest(req)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return AddToContext(ctx, httpRequest, req), nil
+	return addToContext(ctx, httpRequest, req), nil
 }
 
-// RequestFromEvent converts an API Gateway proxy event into an http.Request object.
+// EventToRequest converts an API Gateway proxy event into an http.Request object.
 // Returns the populated request maintaining headers
-func (r *RequestAccessor) RequestFromEvent(req events.APIGatewayProxyRequest) (*http.Request, error) {
+func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*http.Request, error) {
 	decodedBody := []byte(req.Body)
 	if req.IsBase64Encoded {
 		base64Body, err := base64.StdEncoding.DecodeString(req.Body)
@@ -185,8 +185,7 @@ func (r *RequestAccessor) RequestFromEvent(req events.APIGatewayProxyRequest) (*
 	return httpRequest, nil
 }
 
-// AddToHeader adds API gateway context and stage variables to headers on http request
-func AddToHeader(req *http.Request, apiGwRequest events.APIGatewayProxyRequest) (*http.Request, error) {
+func addToHeader(req *http.Request, apiGwRequest events.APIGatewayProxyRequest) (*http.Request, error) {
 	stageVars, err := json.Marshal(apiGwRequest.StageVariables)
 	if err != nil {
 		log.Println("Could not marshal stage variables for custom header")
@@ -202,8 +201,7 @@ func AddToHeader(req *http.Request, apiGwRequest events.APIGatewayProxyRequest) 
 	return req, nil
 }
 
-// AddToContext adds context, API gateway context and stage variables to context on http request
-func AddToContext(ctx context.Context, req *http.Request, apiGwRequest events.APIGatewayProxyRequest) *http.Request {
+func addToContext(ctx context.Context, req *http.Request, apiGwRequest events.APIGatewayProxyRequest) *http.Request {
 	lc, _ := lambdacontext.FromContext(ctx)
 	rc := requestContext{lambdaContext: lc, gatewayProxyContext: apiGwRequest.RequestContext, stageVars: apiGwRequest.StageVariables}
 	ctx = context.WithValue(req.Context(), ctxKey{}, rc)
