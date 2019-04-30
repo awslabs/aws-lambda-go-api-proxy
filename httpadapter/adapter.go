@@ -1,6 +1,7 @@
 package httpadapter
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -18,8 +19,23 @@ func New(handler http.Handler) *HandlerAdapter {
 	}
 }
 
+// Proxy receives an API Gateway proxy event, transforms it into an http.Request
+// object, and sends it to the http.HandlerFunc for routing.
+// It returns a proxy response object generated from the http.Handler.
 func (h *HandlerAdapter) Proxy(event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	req, err := h.ProxyEventToHTTPRequest(event)
+	return h.proxyInternal(req, err)
+}
+
+// ProxyWithContext receives context and an API Gateway proxy event,
+// transforms them into an http.Request object, and sends it to the http.Handler for routing.
+// It returns a proxy response object generated from the http.ResponseWriter.
+func (h *HandlerAdapter) ProxyWithContext(ctx context.Context, event events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	req, err := h.EventToRequestWithContext(ctx, event)
+	return h.proxyInternal(req, err)
+}
+
+func (h *HandlerAdapter) proxyInternal(req *http.Request, err error) (events.APIGatewayProxyResponse, error) {
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}

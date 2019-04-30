@@ -4,6 +4,7 @@
 package ginadapter
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -29,16 +30,28 @@ func New(gin *gin.Engine) *GinLambda {
 
 // Proxy receives an API Gateway proxy event, transforms it into an http.Request
 // object, and sends it to the gin.Engine for routing.
-// It returns a proxy response object gneerated from the http.ResponseWriter.
+// It returns a proxy response object generated from the http.ResponseWriter.
 func (g *GinLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	ginRequest, err := g.ProxyEventToHTTPRequest(req)
+	return g.proxyInternal(ginRequest, err)
+}
+
+// ProxyWithContext receives context and an API Gateway proxy event,
+// transforms them into an http.Request object, and sends it to the gin.Engine for routing.
+// It returns a proxy response object generated from the http.ResponseWriter.
+func (g *GinLambda) ProxyWithContext(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	ginRequest, err := g.EventToRequestWithContext(ctx, req)
+	return g.proxyInternal(ginRequest, err)
+}
+
+func (g *GinLambda) proxyInternal(req *http.Request, err error) (events.APIGatewayProxyResponse, error) {
 
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	respWriter := core.NewProxyResponseWriter()
-	g.ginEngine.ServeHTTP(http.ResponseWriter(respWriter), ginRequest)
+	g.ginEngine.ServeHTTP(http.ResponseWriter(respWriter), req)
 
 	proxyResponse, err := respWriter.GetProxyResponse()
 	if err != nil {

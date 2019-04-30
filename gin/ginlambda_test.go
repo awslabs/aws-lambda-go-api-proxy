@@ -1,10 +1,11 @@
 package ginadapter_test
 
 import (
+	"context"
 	"log"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 
 	. "github.com/onsi/ginkgo"
@@ -30,7 +31,12 @@ var _ = Describe("GinLambda tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			resp, err := adapter.Proxy(req)
+			resp, err := adapter.ProxyWithContext(context.Background(), req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+
+			resp, err = adapter.Proxy(req)
 
 			Expect(err).To(BeNil())
 			Expect(resp.StatusCode).To(Equal(200))

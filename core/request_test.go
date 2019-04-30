@@ -1,12 +1,14 @@
 package core_test
 
 import (
+	"context"
 	"encoding/base64"
 	"io/ioutil"
 	"math/rand"
 	"os"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambdacontext"
 	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 
 	. "github.com/onsi/ginkgo"
@@ -18,7 +20,7 @@ var _ = Describe("RequestAccessor tests", func() {
 		accessor := core.RequestAccessor{}
 		basicRequest := getProxyRequest("/hello", "GET")
 		It("Correctly converts a basic event", func() {
-			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), basicRequest)
 			Expect(err).To(BeNil())
 			Expect("/hello").To(Equal(httpReq.URL.Path))
 			Expect("GET").To(Equal(httpReq.Method))
@@ -26,6 +28,7 @@ var _ = Describe("RequestAccessor tests", func() {
 
 		basicRequest = getProxyRequest("/hello", "get")
 		It("Converts method to uppercase", func() {
+			// calling old method to verify reverse compatibility
 			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
 			Expect(err).To(BeNil())
 			Expect("/hello").To(Equal(httpReq.URL.Path))
@@ -45,7 +48,7 @@ var _ = Describe("RequestAccessor tests", func() {
 		binaryRequest.IsBase64Encoded = true
 
 		It("Decodes a base64 encoded body", func() {
-			httpReq, err := accessor.ProxyEventToHTTPRequest(binaryRequest)
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), binaryRequest)
 			Expect(err).To(BeNil())
 			Expect("/hello").To(Equal(httpReq.URL.Path))
 			Expect("POST").To(Equal(httpReq.Method))
@@ -63,7 +66,7 @@ var _ = Describe("RequestAccessor tests", func() {
 			"world": {"2", "3"},
 		}
 		It("Populates query string correctly", func() {
-			httpReq, err := accessor.ProxyEventToHTTPRequest(qsRequest)
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), qsRequest)
 			Expect(err).To(BeNil())
 			Expect("/hello").To(Equal(httpReq.URL.Path))
 			Expect("GET").To(Equal(httpReq.Method))
@@ -83,7 +86,8 @@ var _ = Describe("RequestAccessor tests", func() {
 
 		It("Stips the base path correct", func() {
 			accessor.StripBasePath("app1")
-			httpReq, err := accessor.ProxyEventToHTTPRequest(basePathRequest)
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), basePathRequest)
+
 			Expect(err).To(BeNil())
 			Expect("/orders").To(Equal(httpReq.URL.Path))
 		})
@@ -92,6 +96,7 @@ var _ = Describe("RequestAccessor tests", func() {
 		contextRequest.RequestContext = getRequestContext()
 
 		It("Populates context header correctly", func() {
+			// calling old method to verify reverse compatibility
 			httpReq, err := accessor.ProxyEventToHTTPRequest(contextRequest)
 			Expect(err).To(BeNil())
 			Expect(2).To(Equal(len(httpReq.Header)))
@@ -123,16 +128,49 @@ var _ = Describe("RequestAccessor tests", func() {
 			contextRequest.RequestContext = getRequestContext()
 
 			accessor := core.RequestAccessor{}
+			// calling old method to verify reverse compatibility
 			httpReq, err := accessor.ProxyEventToHTTPRequest(contextRequest)
 			Expect(err).To(BeNil())
 
-			context, err := accessor.GetAPIGatewayContext(httpReq)
+			headerContext, err := accessor.GetAPIGatewayContext(httpReq)
 			Expect(err).To(BeNil())
-			Expect(context).ToNot(BeNil())
-			Expect("x").To(Equal(context.AccountID))
-			Expect("x").To(Equal(context.RequestID))
-			Expect("x").To(Equal(context.APIID))
-			Expect("prod").To(Equal(context.Stage))
+			Expect(headerContext).ToNot(BeNil())
+			Expect("x").To(Equal(headerContext.AccountID))
+			Expect("x").To(Equal(headerContext.RequestID))
+			Expect("x").To(Equal(headerContext.APIID))
+			proxyContext, ok := core.GetAPIGatewayContextFromContext(httpReq.Context())
+			// should fail because using header proxy method
+			Expect(ok).To(BeFalse())
+
+			httpReq, err = accessor.EventToRequestWithContext(context.Background(), contextRequest)
+			Expect(err).To(BeNil())
+			proxyContext, ok = core.GetAPIGatewayContextFromContext(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect("x").To(Equal(proxyContext.APIID))
+			Expect("x").To(Equal(proxyContext.RequestID))
+			Expect("x").To(Equal(proxyContext.APIID))
+			Expect("prod").To(Equal(proxyContext.Stage))
+			runtimeContext, ok := core.GetRuntimeContextFromContext(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect(runtimeContext).To(BeNil())
+
+			lambdaContext := lambdacontext.NewContext(context.Background(), &lambdacontext.LambdaContext{AwsRequestID: "abc123"})
+			httpReq, err = accessor.EventToRequestWithContext(lambdaContext, contextRequest)
+			Expect(err).To(BeNil())
+
+			headerContext, err = accessor.GetAPIGatewayContext(httpReq)
+			// should fail as new context method doesn't populate headers
+			Expect(err).ToNot(BeNil())
+			proxyContext, ok = core.GetAPIGatewayContextFromContext(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect("x").To(Equal(proxyContext.APIID))
+			Expect("x").To(Equal(proxyContext.RequestID))
+			Expect("x").To(Equal(proxyContext.APIID))
+			Expect("prod").To(Equal(proxyContext.Stage))
+			runtimeContext, ok = core.GetRuntimeContextFromContext(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect(runtimeContext).ToNot(BeNil())
+			Expect("abc123").To(Equal(runtimeContext.AwsRequestID))
 		})
 
 		It("Populates stage variables correctly", func() {
@@ -150,9 +188,29 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect(stageVars["var2"]).ToNot(BeNil())
 			Expect("value1").To(Equal(stageVars["var1"]))
 			Expect("value2").To(Equal(stageVars["var2"]))
+
+			stageVars, ok := core.GetStageVarsFromContext(httpReq.Context())
+			// not present in context
+			Expect(ok).To(BeFalse())
+
+			httpReq, err = accessor.EventToRequestWithContext(context.Background(), varsRequest)
+			Expect(err).To(BeNil())
+
+			stageVars, err = accessor.GetAPIGatewayStageVars(httpReq)
+			// should not be in headers
+			Expect(err).ToNot(BeNil())
+
+			stageVars, ok = core.GetStageVarsFromContext(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect(2).To(Equal(len(stageVars)))
+			Expect(stageVars["var1"]).ToNot(BeNil())
+			Expect(stageVars["var2"]).ToNot(BeNil())
+			Expect("value1").To(Equal(stageVars["var1"]))
+			Expect("value2").To(Equal(stageVars["var2"]))
 		})
 
 		It("Populates the default hostname correctly", func() {
+
 			basicRequest := getProxyRequest("orders", "GET")
 			accessor := core.RequestAccessor{}
 			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
@@ -167,7 +225,7 @@ var _ = Describe("RequestAccessor tests", func() {
 			os.Setenv(core.CustomHostVariable, myCustomHost)
 			basicRequest := getProxyRequest("orders", "GET")
 			accessor := core.RequestAccessor{}
-			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), basicRequest)
 			Expect(err).To(BeNil())
 
 			Expect(myCustomHost).To(Equal("http://" + httpReq.Host))
@@ -180,7 +238,7 @@ var _ = Describe("RequestAccessor tests", func() {
 			os.Setenv(core.CustomHostVariable, myCustomHost+"/")
 			basicRequest := getProxyRequest("orders", "GET")
 			accessor := core.RequestAccessor{}
-			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), basicRequest)
 			Expect(err).To(BeNil())
 
 			Expect(myCustomHost).To(Equal("http://" + httpReq.Host))

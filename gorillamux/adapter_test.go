@@ -1,6 +1,7 @@
 package gorillamux_test
 
 import (
+	"context"
 	"fmt"
 	"net/http"
 
@@ -36,7 +37,7 @@ var _ = Describe("GorillaMuxAdapter tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			homePageResp, homePageReqErr := adapter.Proxy(homePageReq)
+			homePageResp, homePageReqErr := adapter.ProxyWithContext(context.Background(), homePageReq)
 
 			Expect(homePageReqErr).To(BeNil())
 			Expect(homePageResp.StatusCode).To(Equal(200))
