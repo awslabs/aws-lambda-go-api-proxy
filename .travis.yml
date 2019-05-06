@@ -3,4 +3,4 @@ language: go
 go:
   - 1.x
 script:
-  - env GO111MODULE=on
+  - env GO111MODULE=on make
