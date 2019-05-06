@@ -10,9 +10,8 @@ SAMPLE_BINARY_NAME=main
     
 all: clean deps test build package
 build: 
-	cd core && $(GOBUILD) -o $(CORE_BINARY_NAME) -v
-	cd gin && $(GOBUILD) -o $(GIN_BINARY_NAME) -v
-	cd sample && GOOS=linux $(GOBUILD) -o $(SAMPLE_BINARY_NAME)
+	$(GOBUILD) ./...
+	cd sample && $(GOBUILD) -o $(SAMPLE_BINARY_NAME)
 package:
 	cd sample && zip main.zip $(SAMPLE_BINARY_NAME)
 test: 
