@@ -8,7 +8,7 @@ CORE_BINARY_NAME=aws-lambda-go-api-proxy-core
 GIN_BINARY_NAME=aws-lambda-go-api-proxy-gin
 SAMPLE_BINARY_NAME=main
     
-all: clean deps test build package
+all: clean test build package
 build: 
 	$(GOBUILD) ./...
 	cd sample && $(GOBUILD) -o $(SAMPLE_BINARY_NAME)
@@ -17,11 +17,5 @@ package:
 test: 
 	$(GOTEST) -v ./...
 clean: 
-	$(GOCLEAN)
-	rm -f core/$(CORE_BINARY_NAME)
-	rm -f gin/$(GIN_BINARY_NAME)
 	rm -f sample/$(SAMPLE_BINARY_NAME)
 	rm -f sample/$(SAMPLE_BINARY_NAME).zip
-deps:
-	$(GOGET) -u github.com/kardianos/govendor
-	govendor sync
