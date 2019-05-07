@@ -1,6 +1,6 @@
 // Packge echolambda add Echo support for the aws-severless-go-api library.
 // Uses the core package behind the scenes and exposes the New method to
-// get a new instance and Proxy method to send request to the Echo engine.
+// get a new instance and Proxy method to send request to the echo.Echo
 package echoadapter
 
 import (
@@ -11,8 +11,8 @@ import (
 	"github.com/labstack/echo"
 )
 
-// EchoLambda makes it easy to send API Gateway proxy events to a Echo
-// Engine. The library transforms the proxy event into an HTTP request and then
+// EchoLambda makes it easy to send API Gateway proxy events to a echo.Echo.
+// The library transforms the proxy event into an HTTP request and then
 // creates a proxy response object from the http.ResponseWriter
 type EchoLambda struct {
 	core.RequestAccessor
@@ -21,14 +21,14 @@ type EchoLambda struct {
 }
 
 // New creates a new instance of the EchoLambda object.
-// Receives an initialized *Echo object - normally created with gin.Default().
-// It returns the initialized instance of the GinLambda object.
+// Receives an initialized *echo.Echo object - normally created with echo.New().
+// It returns the initialized instance of the EchoLambda object.
 func New(e *echo.Echo) *EchoLambda {
 	return &EchoLambda{Echo: e}
 }
 
 // Proxy receives an API Gateway proxy event, transforms it into an http.Request
-// object, and sends it to the gin.Engine for routing.
+// object, and sends it to the echo.Echo for routing.
 // It returns a proxy response object gneerated from the http.ResponseWriter.
 func (e *EchoLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	eRequest, err := e.ProxyEventToHTTPRequest(req)
