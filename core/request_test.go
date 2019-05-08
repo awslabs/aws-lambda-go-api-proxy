@@ -60,13 +60,17 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect(binaryBody).To(Equal(bodyBytes))
 		})
 
-		qsRequest := getProxyRequest("/hello", "GET")
-		qsRequest.MultiValueQueryStringParameters = map[string][]string{
+		mqsRequest := getProxyRequest("/hello", "GET")
+		mqsRequest.MultiValueQueryStringParameters = map[string][]string{
 			"hello": {"1"},
 			"world": {"2", "3"},
 		}
-		It("Populates query string correctly", func() {
-			httpReq, err := accessor.EventToRequestWithContext(context.Background(), qsRequest)
+		mqsRequest.QueryStringParameters = map[string]string{
+			"hello": "1",
+			"world": "2",
+		}
+		It("Populates multiple value query string correctly", func() {
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), mqsRequest)
 			Expect(err).To(BeNil())
 			Expect("/hello").To(Equal(httpReq.URL.Path))
 			Expect("GET").To(Equal(httpReq.Method))
@@ -80,6 +84,29 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect("1").To(Equal(query["hello"][0]))
 			Expect("2").To(Equal(query["world"][0]))
 			Expect("3").To(Equal(query["world"][1]))
+		})
+
+		// Support `QueryStringParameters` for backward compatibility.
+		// https://github.com/awslabs/aws-lambda-go-api-proxy/issues/37
+		qsRequest := getProxyRequest("/hello", "GET")
+		qsRequest.QueryStringParameters = map[string]string{
+			"hello": "1",
+			"world": "2",
+		}
+		It("Populates query string correctly", func() {
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), qsRequest)
+			Expect(err).To(BeNil())
+			Expect("/hello").To(Equal(httpReq.URL.Path))
+			Expect("GET").To(Equal(httpReq.Method))
+
+			query := httpReq.URL.Query()
+			Expect(2).To(Equal(len(query)))
+			Expect(query["hello"]).ToNot(BeNil())
+			Expect(query["world"]).ToNot(BeNil())
+			Expect(1).To(Equal(len(query["hello"])))
+			Expect(1).To(Equal(len(query["world"])))
+			Expect("1").To(Equal(query["hello"][0]))
+			Expect("2").To(Equal(query["world"][0]))
 		})
 
 		basePathRequest := getProxyRequest("/app1/orders", "GET")
