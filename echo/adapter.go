@@ -4,6 +4,7 @@
 package echoadapter
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -29,16 +30,28 @@ func New(e *echo.Echo) *EchoLambda {
 
 // Proxy receives an API Gateway proxy event, transforms it into an http.Request
 // object, and sends it to the echo.Echo for routing.
-// It returns a proxy response object gneerated from the http.ResponseWriter.
+// It returns a proxy response object generated from the http.ResponseWriter.
 func (e *EchoLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
-	eRequest, err := e.ProxyEventToHTTPRequest(req)
+	echoRequest, err := e.ProxyEventToHTTPRequest(req)
+	return e.proxyInternal(echoRequest, err)
+}
+
+// ProxyWithContext receives context and an API Gateway proxy event,
+// transforms them into an http.Request object, and sends it to the echo.Echo for routing.
+// It returns a proxy response object generated from the http.ResponseWriter.
+func (e *EchoLambda) ProxyWithContext(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	echoRequest, err := e.EventToRequestWithContext(ctx, req)
+	return e.proxyInternal(echoRequest, err)
+}
+
+func (e *EchoLambda) proxyInternal(req *http.Request, err error) (events.APIGatewayProxyResponse, error) {
 
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	respWriter := core.NewProxyResponseWriter()
-	e.Echo.ServeHTTP(http.ResponseWriter(respWriter), eRequest)
+	e.Echo.ServeHTTP(http.ResponseWriter(respWriter), req)
 
 	proxyResponse, err := respWriter.GetProxyResponse()
 	if err != nil {
