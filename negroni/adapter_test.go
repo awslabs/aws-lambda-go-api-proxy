@@ -1,12 +1,13 @@
 package negroniadapter_test
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/awslabs/aws-lambda-go-api-proxy/negroni"
+	negroniadapter "github.com/awslabs/aws-lambda-go-api-proxy/negroni"
 	"github.com/urfave/negroni"
 
 	. "github.com/onsi/ginkgo"
@@ -42,7 +43,7 @@ var _ = Describe("NegroniAdapter tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			homePageResp, homePageReqErr := adapter.Proxy(homePageReq)
+			homePageResp, homePageReqErr := adapter.ProxyWithContext(context.Background(), homePageReq)
 
 			Expect(homePageReqErr).To(BeNil())
 			Expect(homePageResp.StatusCode).To(Equal(200))

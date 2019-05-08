@@ -4,6 +4,7 @@
 package chiadapter
 
 import (
+	"context"
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -29,9 +30,21 @@ func New(chi *chi.Mux) *ChiLambda {
 
 // Proxy receives an API Gateway proxy event, transforms it into an http.Request
 // object, and sends it to the chi.Mux for routing.
-// It returns a proxy response object gneerated from the http.ResponseWriter.
+// It returns a proxy response object generated from the http.ResponseWriter.
 func (g *ChiLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	chiRequest, err := g.ProxyEventToHTTPRequest(req)
+	return g.proxyInternal(chiRequest, err)
+}
+
+// ProxyWithContext receives context and an API Gateway proxy event,
+// transforms them into an http.Request object, and sends it to the chi.Mux for routing.
+// It returns a proxy response object generated from the http.ResponseWriter.
+func (g *ChiLambda) ProxyWithContext(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	chiRequest, err := g.EventToRequestWithContext(ctx, req)
+	return g.proxyInternal(chiRequest, err)
+}
+
+func (g *ChiLambda) proxyInternal(chiRequest *http.Request, err error) (events.APIGatewayProxyResponse, error) {
 
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
