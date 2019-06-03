@@ -4,8 +4,8 @@ import (
 	"context"
 	"log"
 
+	ginadapter "github.com/LF-Engineering/aws-lambda-go-api-proxy/gin"
 	"github.com/aws/aws-lambda-go/events"
-	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 
 	. "github.com/onsi/ginkgo"

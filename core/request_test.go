@@ -7,9 +7,9 @@ import (
 	"math/rand"
 	"os"
 
+	"github.com/LF-Engineering/aws-lambda-go-api-proxy/core"
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambdacontext"
-	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

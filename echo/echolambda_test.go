@@ -3,8 +3,8 @@ package echoadapter_test
 import (
 	"log"
 
+	echoadapter "github.com/LF-Engineering/aws-lambda-go-api-proxy/echo"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/awslabs/aws-lambda-go-api-proxy/echo"
 	"github.com/labstack/echo"
 
 	. "github.com/onsi/ginkgo"

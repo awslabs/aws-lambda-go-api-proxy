@@ -6,8 +6,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/LF-Engineering/aws-lambda-go-api-proxy/httpadapter"
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
