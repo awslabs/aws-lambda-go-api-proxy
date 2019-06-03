@@ -11,6 +11,8 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
+*.iml
+.idea/
 .vscode
 vendor/*/
 gin/aws-lambda-go-api-proxy-gin
