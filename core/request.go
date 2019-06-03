@@ -141,6 +141,12 @@ func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*ht
 	}
 
 	path := req.Path
+
+	// Strip off the query parameters - add them back below after decoding
+	if strings.Index(path, "?") >= 0 {
+		path = path[:strings.Index(path, "?")]
+	}
+
 	if r.stripBasePath != "" && len(r.stripBasePath) > 1 {
 		if strings.HasPrefix(path, r.stripBasePath) {
 			path = strings.Replace(path, r.stripBasePath, "", 1)
