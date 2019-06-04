@@ -1,5 +1,7 @@
 ## AWS Lambda Go Api Proxy
 
+[![CircleCI](https://circleci.com/gh/LF-Engineering/aws-lambda-go-api-proxy/tree/master.svg?style=svg&circle-token=7a4af389ad43eb22517668fa8997847e3d981de4)](https://circleci.com/gh/LF-Engineering/aws-lambda-go-api-proxy/tree/master)
+
 **LF Notice**: this is a fork of [github.com/awslabs/aws-lambda-go-api-proxy](github.com/awslabs/aws-lambda-go-api-proxy) that contains:
 
 * Fix for response headers (current master branch in upstream is broken)

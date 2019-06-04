@@ -154,7 +154,10 @@ var _ = Describe("ResponseWriter tests", func() {
 			Expect(err).To(BeNil())
 
 			// Headers are not written to `Headers` field
-			Expect(0).To(Equal(len(proxyResponse.Headers)))
+			// TODO: DAD - why is this test here (commented out for now)? Added
+			//  back the logic to copy over headers - without this the
+			//  'Content-Type' is NOT passed through properly
+			//Expect(0).To(Equal(len(proxyResponse.Headers)))
 			Expect(1).To(Equal(len(proxyResponse.MultiValueHeaders["Content-Type"])))
 			Expect("application/json").To(Equal(proxyResponse.MultiValueHeaders["Content-Type"][0]))
 		})
@@ -168,7 +171,10 @@ var _ = Describe("ResponseWriter tests", func() {
 			Expect(err).To(BeNil())
 
 			// Headers are not written to `Headers` field
-			Expect(0).To(Equal(len(proxyResponse.Headers)))
+			// TODO: DAD - why is this test here (commented out for now)? Added
+			//  back the logic to copy over headers - without this the
+			//  'Content-Type' is NOT passed through properly
+			//Expect(0).To(Equal(len(proxyResponse.Headers)))
 
 			// There are two headers here because Content-Type is always written implicitly
 			Expect(2).To(Equal(len(proxyResponse.MultiValueHeaders["Set-Cookie"])))
