@@ -1,0 +1,49 @@
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: circleci/golang:1.11-node
+    working_directory: /go/src/github.com/LF-Engineering/aws-lambda-go-api-proxy
+    steps:
+      - checkout
+      - restore_cache:
+          name: Restore Cache
+          keys:
+            - dep-packages-{{ checksum "Gopkg.lock" }}
+      - run:
+          name: Setup Dependencies
+          command: make setup
+      - run:
+          name: Download dependencies
+          command: make deps
+      - run:
+          name: Build
+          command: make build
+      - run:
+          name: Test
+          command: make test
+      #- run:
+      #    name: Lint
+      #    command: make lint
+      - save_cache:
+          name: Save Dep Cache
+          key: dep-packages-{{ checksum "Gopkg.lock" }}
+          paths:
+            - vendor
+            - node_modules
+      - persist_to_workspace:
+          root: ./
+          paths:
+            - bin
+            - vendor
+
+workflows:
+  version: 2.1
+  build_and deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+

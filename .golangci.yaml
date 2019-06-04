@@ -1,0 +1,84 @@
+# More info on config here: https://github.com/golangci/golangci-lint#config-file
+run:
+  deadline: 5m
+  issues-exit-code: 1
+  tests: true
+  skip-dirs:
+    - .git
+    - bin
+    - vendor
+    - node_modules
+    - var
+    - gen
+    - tmp
+  skip-files:
+    - \.pb\.go$
+    - \.pb\.goclay\.go$
+
+output:
+  format: colored-line-number
+  print-issued-lines: true
+  print-linter-name: true
+
+linters-settings:
+  errcheck:
+    # report about not checking of errors in type assetions: `a := b.(MyStruct)`;
+    # default is false: such cases aren't reported by default.
+    check-type-assertions: true
+
+    # report about assignment of errors to blank identifier: `num, _ := strconv.Atoi(numStr)`;
+    # default is false: such cases aren't reported by default.
+    check-blank: true
+  govet:
+    check-shadowing: true
+  golint:
+    min-confidence: 0
+  dupl:
+    threshold: 100
+  goconst:
+    min-len:         2
+    min-occurrences: 2
+  maligned:
+    # print struct with more effective memory layout or not, false by default
+    suggest-new: true
+ 
+linters:
+  disable-all: true
+  enable:
+    - golint
+    - govet
+    - errcheck
+    - deadcode
+    - structcheck
+    - varcheck
+    - ineffassign
+    - typecheck
+    - goconst
+    - gocyclo
+    - gofmt
+    - goimports
+    - gosec
+    - megacheck # (staticcheck + gosimple + unused in one linter)
+    - depguard
+    - unconvert
+    - unparam
+    - unused
+    - nakedret
+    - maligned
+    #- dupl
+
+issues:
+  exclude-use-default: false
+  exclude:
+    # _ instead of err checks
+    - G104
+    # for "public interface + private struct implementation" cases only!
+    - exported func * returns unexported type *, which can be annoying to use
+    # can be removed in the development phase
+    # - (comment on exported (method|function|type|const)|should have( a package)? comment|comment should be of the form)
+    # not for the active development - can be removed in the stable phase
+    - should have a package comment, unless it's in another file for this package
+    - don't use an underscore in package name
+    # errcheck: Almost all programs ignore errors on these functions and in most cases it's ok
+    - Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*printf?|os\.(Un)?Setenv|.*Rollback). is not checked
+    - should check returned error before deferring
