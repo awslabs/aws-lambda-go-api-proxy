@@ -215,7 +215,7 @@ func addToHeader(req *http.Request, apiGwRequest events.APIGatewayProxyRequest) 
 func addToContext(ctx context.Context, req *http.Request, apiGwRequest events.APIGatewayProxyRequest) *http.Request {
 	lc, _ := lambdacontext.FromContext(ctx)
 	rc := requestContext{lambdaContext: lc, gatewayProxyContext: apiGwRequest.RequestContext, stageVars: apiGwRequest.StageVariables}
-	ctx = context.WithValue(req.Context(), ctxKey{}, rc)
+	ctx = context.WithValue(ctx, ctxKey{}, rc)
 	return req.WithContext(ctx)
 }
 
