@@ -28,28 +28,24 @@ require (
 	github.com/json-iterator/go v0.0.0-20180128142709-bca911dae073
 	github.com/kardianos/govendor v1.0.9 // indirect
 	github.com/kataras/golog v0.0.0-20190624001437-99c81de45f40 // indirect
-	github.com/kataras/iris v11.1.1+incompatible // indirect
+	github.com/kataras/iris v11.1.1+incompatible
 	github.com/kataras/pio v0.0.0-20190103105442-ea782b38602d // indirect
 	github.com/klauspost/compress v1.7.4 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
 	github.com/labstack/echo v3.3.10+incompatible
-	github.com/labstack/gommon v0.2.8 // indirect
-	github.com/mattn/go-colorable v0.1.1 // indirect
-	github.com/mattn/go-isatty v0.0.5
+	github.com/labstack/echo/v4 v4.1.6
+	github.com/mattn/go-isatty v0.0.8
 	github.com/microcosm-cc/bluemonday v1.0.2 // indirect
 	github.com/onsi/ginkgo v0.0.0-20180119174237-747514b53ddd
 	github.com/onsi/gomega v1.3.0
 	github.com/pkg/errors v0.8.1 // indirect
 	github.com/ryanuber/columnize v2.1.0+incompatible // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
-	github.com/stretchr/testify v1.3.0 // indirect
 	github.com/ugorji/go v0.0.0-20180129160544-d2b24cf3d3b4
 	github.com/urfave/negroni v0.0.0-20180130044549-22c5532ea862
-	github.com/valyala/fasttemplate v1.0.1 // indirect
-	golang.org/x/net v0.0.0-20190311183353-d8887717615a
-	golang.org/x/sys v0.0.0-20190222072716-a9d3bda3a223
-	golang.org/x/text v0.3.0
-	golang.org/x/tools v0.0.0-20190506145303-2d16b83fe98c // indirect
+	golang.org/x/net v0.0.0-20190607181551-461777fb6f67
+	golang.org/x/sys v0.0.0-20190609082536-301114b31cce
+	golang.org/x/text v0.3.2
 	gopkg.in/go-playground/validator.v8 v8.18.2
 	gopkg.in/yaml.v2 v2.2.2
 )
