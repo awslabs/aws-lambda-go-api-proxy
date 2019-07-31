@@ -1,4 +1,4 @@
-// Packge chilambda add Chi support for the aws-severless-go-api library.
+// Package chilambda add Chi support for the aws-severless-go-api library.
 // Uses the core package behind the scenes and exposes the New method to
 // get a new instance and Proxy method to send request to the Chi mux.
 package chiadapter

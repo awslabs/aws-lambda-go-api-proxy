@@ -7,7 +7,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-// GatewayTimeout returns a dafault Gateway Timeout (504) response
+// GatewayTimeout returns a default Gateway Timeout (504) response
 func GatewayTimeout() events.APIGatewayProxyResponse {
 	return events.APIGatewayProxyResponse{StatusCode: http.StatusGatewayTimeout}
 }

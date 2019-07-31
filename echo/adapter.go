@@ -1,4 +1,4 @@
-// Packge echolambda add Echo support for the aws-severless-go-api library.
+// Package echoadapter add Echo support for the aws-lambda-go-api-proxy library.
 // Uses the core package behind the scenes and exposes the New method to
 // get a new instance and Proxy method to send request to the echo.Echo
 package echoadapter
