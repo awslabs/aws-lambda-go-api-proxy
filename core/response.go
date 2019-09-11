@@ -21,6 +21,7 @@ type ProxyResponseWriter struct {
 	headers http.Header
 	body    bytes.Buffer
 	status  int
+	observers []chan <-bool
 }
 
 // NewProxyResponseWriter returns a new ProxyResponseWriter object.
@@ -30,8 +31,23 @@ func NewProxyResponseWriter() *ProxyResponseWriter {
 	return &ProxyResponseWriter{
 		headers: make(http.Header),
 		status:  defaultStatusCode,
+		observers: make([]chan<- bool, 0),
 	}
 
+}
+
+func (r *ProxyResponseWriter) CloseNotify() <-chan bool {
+	ch := make(chan bool)
+
+	r.observers = append(r.observers, ch)
+
+	return ch
+}
+
+func (r *ProxyResponseWriter) notifyClosed() {
+	for _, v := range r.observers {
+		v <- true
+	}
 }
 
 // Header implementation from the http.ResponseWriter interface.
@@ -69,6 +85,8 @@ func (r *ProxyResponseWriter) WriteHeader(status int) {
 // Returns a populated proxy response object. If the response is invalid, for example
 // has no headers or an invalid status code returns an error.
 func (r *ProxyResponseWriter) GetProxyResponse() (events.APIGatewayProxyResponse, error) {
+	defer r.notifyClosed()
+
 	if r.status == defaultStatusCode {
 		return events.APIGatewayProxyResponse{}, errors.New("Status code not set on response")
 	}
