@@ -85,7 +85,7 @@ func (r *ProxyResponseWriter) WriteHeader(status int) {
 // Returns a populated proxy response object. If the response is invalid, for example
 // has no headers or an invalid status code returns an error.
 func (r *ProxyResponseWriter) GetProxyResponse() (events.APIGatewayProxyResponse, error) {
-	defer r.notifyClosed()
+	r.notifyClosed()
 
 	if r.status == defaultStatusCode {
 		return events.APIGatewayProxyResponse{}, errors.New("Status code not set on response")
