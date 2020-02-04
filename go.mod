@@ -28,7 +28,7 @@ require (
 	github.com/json-iterator/go v0.0.0-20180128142709-bca911dae073
 	github.com/kardianos/govendor v1.0.9 // indirect
 	github.com/kataras/golog v0.0.0-20190624001437-99c81de45f40 // indirect
-	github.com/kataras/iris v11.1.1+incompatible // indirect
+	github.com/kataras/iris v11.1.1+incompatible
 	github.com/kataras/pio v0.0.0-20190103105442-ea782b38602d // indirect
 	github.com/klauspost/compress v1.7.4 // indirect
 	github.com/klauspost/cpuid v1.2.1 // indirect
