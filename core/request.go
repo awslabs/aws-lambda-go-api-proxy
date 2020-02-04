@@ -166,6 +166,17 @@ func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*ht
 			}
 		}
 		path += "?" + queryString
+	} else if len(req.QueryStringParameters) > 0 {
+		// Support `QueryStringParameters` for backward compatibility.
+		// https://github.com/awslabs/aws-lambda-go-api-proxy/issues/37
+		queryString := ""
+		for q := range req.QueryStringParameters {
+			if queryString != "" {
+				queryString += "&"
+			}
+			queryString += url.QueryEscape(q) + "=" + url.QueryEscape(req.QueryStringParameters[q])
+		}
+		path += "?" + queryString
 	}
 
 	httpRequest, err := http.NewRequest(
@@ -204,7 +215,7 @@ func addToHeader(req *http.Request, apiGwRequest events.APIGatewayProxyRequest) 
 func addToContext(ctx context.Context, req *http.Request, apiGwRequest events.APIGatewayProxyRequest) *http.Request {
 	lc, _ := lambdacontext.FromContext(ctx)
 	rc := requestContext{lambdaContext: lc, gatewayProxyContext: apiGwRequest.RequestContext, stageVars: apiGwRequest.StageVariables}
-	ctx = context.WithValue(req.Context(), ctxKey{}, rc)
+	ctx = context.WithValue(ctx, ctxKey{}, rc)
 	return req.WithContext(ctx)
 }
 
