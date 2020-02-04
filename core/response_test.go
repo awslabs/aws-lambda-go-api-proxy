@@ -153,7 +153,7 @@ var _ = Describe("ResponseWriter tests", func() {
 			proxyResponse, err := response.GetProxyResponse()
 			Expect(err).To(BeNil())
 
-			// Headers are not written to `Headers` field
+			// Headers are also written to `Headers` field
 			Expect(1).To(Equal(len(proxyResponse.Headers)))
 			Expect(1).To(Equal(len(proxyResponse.MultiValueHeaders["Content-Type"])))
 			Expect("application/json").To(Equal(proxyResponse.MultiValueHeaders["Content-Type"][0]))
@@ -167,7 +167,7 @@ var _ = Describe("ResponseWriter tests", func() {
 			proxyResponse, err := response.GetProxyResponse()
 			Expect(err).To(BeNil())
 
-			// Headers are not written to `Headers` field
+			// Headers are also written to `Headers` field
 			Expect(2).To(Equal(len(proxyResponse.Headers)))
 
 			// There are two headers here because Content-Type is always written implicitly
