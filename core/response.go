@@ -59,7 +59,7 @@ func (r *ProxyResponseWriter) Header() http.Header {
 // was set before with the WriteHeader method it sets the status
 // for the response to 200 OK.
 func (r *ProxyResponseWriter) Write(body []byte) (int, error) {
-	if r.status == -1 {
+	if r.status == defaultStatusCode {
 		r.status = http.StatusOK
 	}
 
