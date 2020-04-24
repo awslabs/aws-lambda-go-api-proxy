@@ -190,9 +190,19 @@ func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*ht
 		log.Println(err)
 		return nil, err
 	}
-	for h := range req.Headers {
-		httpRequest.Header.Add(h, req.Headers[h])
+
+	if req.MultiValueHeaders != nil {
+		for k, values := range req.MultiValueHeaders {
+			for _, value := range values {
+				httpRequest.Header.Add(k, value)
+			}
+		}
+	} else {
+		for h := range req.Headers {
+			httpRequest.Header.Add(h, req.Headers[h])
+		}
 	}
+
 	return httpRequest, nil
 }
 
