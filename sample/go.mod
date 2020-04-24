@@ -1,10 +1,11 @@
-module github.com/awslabs/aws-lambda-go-api-proxy-sample
+module github.com/LF-Engineering/aws-lambda-go-api-proxy-sample
 
 go 1.12
 
 require (
+	github.com/LF-Engineering/aws-lambda-go-api-proxy v0.3.0
 	github.com/aws/aws-lambda-go v1.10.0
-	github.com/awslabs/aws-lambda-go-api-proxy v0.3.0
+	github.com/awslabs/aws-lambda-go-api-proxy v0.6.0 // indirect
 	github.com/gin-contrib/sse v0.0.0-20190301062529-5545eab6dad3 // indirect
 	github.com/gin-gonic/gin v1.3.0
 	github.com/golang/protobuf v1.3.1 // indirect

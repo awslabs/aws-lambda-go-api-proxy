@@ -20,11 +20,10 @@ setup: $(LINT_TOOL) setup_dev
 
 setup_dev:
 	go get -u golang.org/x/tools/cmd/goimports
-	go get -u github.com/golang/dep/cmd/dep
 	go get golang.org/x/tools/cmd/cover
 
 deps:
-	dep ensure
+	go mod download
 
 build: deps
 	$(GOBUILD) ./...
