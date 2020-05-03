@@ -18,10 +18,10 @@ const contentTypeHeaderKey = "Content-Type"
 // ProxyResponseWriter implements http.ResponseWriter and adds the method
 // necessary to return an events.APIGatewayProxyResponse object
 type ProxyResponseWriter struct {
-	headers http.Header
-	body    bytes.Buffer
-	status  int
-	observers []chan <-bool
+	headers   http.Header
+	body      bytes.Buffer
+	status    int
+	observers []chan<- bool
 }
 
 // NewProxyResponseWriter returns a new ProxyResponseWriter object.
@@ -29,8 +29,8 @@ type ProxyResponseWriter struct {
 // status code of -1
 func NewProxyResponseWriter() *ProxyResponseWriter {
 	return &ProxyResponseWriter{
-		headers: make(http.Header),
-		status:  defaultStatusCode,
+		headers:   make(http.Header),
+		status:    defaultStatusCode,
 		observers: make([]chan<- bool, 0),
 	}
 
@@ -111,7 +111,7 @@ func (r *ProxyResponseWriter) GetProxyResponse() (events.APIGatewayProxyResponse
 
 	return events.APIGatewayProxyResponse{
 		StatusCode:        r.status,
-		Headers:         proxyHeaders,
+		Headers:           proxyHeaders,
 		MultiValueHeaders: http.Header(r.headers),
 		Body:              output,
 		IsBase64Encoded:   isBase64,

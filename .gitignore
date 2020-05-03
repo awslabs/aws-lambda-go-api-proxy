@@ -12,8 +12,9 @@
 *.out
 
 .vscode
-vendor/*/
 gin/aws-lambda-go-api-proxy-gin
 core/aws-lambda-go-api-proxy-core
 sample/main
 sample/output-sam.yaml
+vendor/
+.idea/

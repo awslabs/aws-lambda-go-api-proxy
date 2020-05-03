@@ -1,4 +1,4 @@
-package handlerfunc_test
+package proxy_test
 
 import (
 	"context"
@@ -7,23 +7,30 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/awslabs/aws-lambda-go-api-proxy/handlerfunc"
+	"github.com/awslabs/aws-lambda-go-api-proxy/proxy"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("HandlerFuncAdapter tests", func() {
+type handler struct{}
+
+func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	w.Header().Add("unfortunately-required-header", "")
+	fmt.Fprintf(w, "Go Lambda!!")
+}
+
+var _ = Describe("HTTPAdapter tests", func() {
 	Context("Simple ping request", func() {
 		It("Proxies the event correctly", func() {
 			log.Println("Starting test")
 
-			handler := func(w http.ResponseWriter, req *http.Request) {
+			var httpHandler http.Handler = http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 				w.Header().Add("unfortunately-required-header", "")
 				fmt.Fprintf(w, "Go Lambda!!")
-			}
+			})
 
-			adapter := handlerfunc.New(handler)
+			adapter := proxy.NewAdapter(httpHandler)
 
 			req := events.APIGatewayProxyRequest{
 				Path:       "/ping",
