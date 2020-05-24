@@ -21,8 +21,8 @@ import (
 
 // CustomHostVariable is the name of the environment variable that contains
 // the custom hostname for the request. If this variable is not set the framework
-// reverts to `DefaultServerAddress`. The value for a custom host should include
-// a protocol: http://my-custom.host.com
+// reverts to `RequestContext.DomainName`. The value for a custom host should
+// include a protocol: http://my-custom.host.com
 const CustomHostVariable = "GO_API_HOST"
 
 // DefaultServerAddress is prepended to the path of each incoming reuqest
