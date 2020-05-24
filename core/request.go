@@ -149,7 +149,7 @@ func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*ht
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
-	serverAddress := DefaultServerAddress
+	serverAddress := "https://" + req.RequestContext.DomainName
 	if customAddress, ok := os.LookupEnv(CustomHostVariable); ok {
 		serverAddress = customAddress
 	}
