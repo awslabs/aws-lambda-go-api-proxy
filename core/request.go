@@ -25,9 +25,6 @@ import (
 // include a protocol: http://my-custom.host.com
 const CustomHostVariable = "GO_API_HOST"
 
-// DefaultServerAddress is prepended to the path of each incoming reuqest
-const DefaultServerAddress = "https://aws-serverless-go-api.com"
-
 // APIGwContextHeader is the custom header key used to store the
 // API Gateway context. To access the Context properties use the
 // GetAPIGatewayContext method of the RequestAccessor object.
