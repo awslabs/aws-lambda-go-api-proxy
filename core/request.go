@@ -193,6 +193,7 @@ func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*ht
 	for h := range req.Headers {
 		httpRequest.Header.Add(h, req.Headers[h])
 	}
+	httpRequest.RequestURI = httpRequest.URL.RequestURI()
 	return httpRequest, nil
 }
 

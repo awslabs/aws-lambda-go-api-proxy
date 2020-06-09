@@ -23,6 +23,7 @@ var _ = Describe("RequestAccessor tests", func() {
 			httpReq, err := accessor.EventToRequestWithContext(context.Background(), basicRequest)
 			Expect(err).To(BeNil())
 			Expect("/hello").To(Equal(httpReq.URL.Path))
+			Expect("/hello").To(Equal(httpReq.RequestURI))
 			Expect("GET").To(Equal(httpReq.Method))
 		})
 
@@ -32,6 +33,7 @@ var _ = Describe("RequestAccessor tests", func() {
 			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
 			Expect(err).To(BeNil())
 			Expect("/hello").To(Equal(httpReq.URL.Path))
+			Expect("/hello").To(Equal(httpReq.RequestURI))
 			Expect("GET").To(Equal(httpReq.Method))
 		})
 
@@ -51,6 +53,7 @@ var _ = Describe("RequestAccessor tests", func() {
 			httpReq, err := accessor.EventToRequestWithContext(context.Background(), binaryRequest)
 			Expect(err).To(BeNil())
 			Expect("/hello").To(Equal(httpReq.URL.Path))
+			Expect("/hello").To(Equal(httpReq.RequestURI))
 			Expect("POST").To(Equal(httpReq.Method))
 
 			bodyBytes, err := ioutil.ReadAll(httpReq.Body)
@@ -73,6 +76,9 @@ var _ = Describe("RequestAccessor tests", func() {
 			httpReq, err := accessor.EventToRequestWithContext(context.Background(), mqsRequest)
 			Expect(err).To(BeNil())
 			Expect("/hello").To(Equal(httpReq.URL.Path))
+			Expect(httpReq.RequestURI).To(ContainSubstring("hello=1"))
+			Expect(httpReq.RequestURI).To(ContainSubstring("world=2"))
+			Expect(httpReq.RequestURI).To(ContainSubstring("world=3"))
 			Expect("GET").To(Equal(httpReq.Method))
 
 			query := httpReq.URL.Query()
@@ -97,6 +103,8 @@ var _ = Describe("RequestAccessor tests", func() {
 			httpReq, err := accessor.EventToRequestWithContext(context.Background(), qsRequest)
 			Expect(err).To(BeNil())
 			Expect("/hello").To(Equal(httpReq.URL.Path))
+			Expect(httpReq.RequestURI).To(ContainSubstring("hello=1"))
+			Expect(httpReq.RequestURI).To(ContainSubstring("world=2"))
 			Expect("GET").To(Equal(httpReq.Method))
 
 			query := httpReq.URL.Query()
@@ -117,6 +125,7 @@ var _ = Describe("RequestAccessor tests", func() {
 
 			Expect(err).To(BeNil())
 			Expect("/orders").To(Equal(httpReq.URL.Path))
+			Expect("/orders").To(Equal(httpReq.RequestURI))
 		})
 
 		contextRequest := getProxyRequest("orders", "GET")
