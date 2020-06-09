@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"math/rand"
 	"os"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambdacontext"
@@ -115,6 +116,44 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect(1).To(Equal(len(query["world"])))
 			Expect("1").To(Equal(query["hello"][0]))
 			Expect("2").To(Equal(query["world"][0]))
+		})
+
+		mvhRequest := getProxyRequest("/hello", "GET")
+		mvhRequest.MultiValueHeaders = map[string][]string{
+			"hello": {"1"},
+			"world": {"2", "3"},
+		}
+		It("Populates multiple value headers correctly", func() {
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), mvhRequest)
+			Expect(err).To(BeNil())
+			Expect("/hello").To(Equal(httpReq.URL.Path))
+			Expect("GET").To(Equal(httpReq.Method))
+
+			headers := httpReq.Header
+			Expect(2).To(Equal(len(headers)))
+
+			for k, value := range headers {
+				Expect(value).To(Equal(mvhRequest.MultiValueHeaders[strings.ToLower(k)]))
+			}
+		})
+
+		svhRequest := getProxyRequest("/hello", "GET")
+		svhRequest.Headers = map[string]string{
+			"hello": "1",
+			"world": "2",
+		}
+		It("Populates single value headers correctly", func() {
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), svhRequest)
+			Expect(err).To(BeNil())
+			Expect("/hello").To(Equal(httpReq.URL.Path))
+			Expect("GET").To(Equal(httpReq.Method))
+
+			headers := httpReq.Header
+			Expect(2).To(Equal(len(headers)))
+
+			for k, value := range headers {
+				Expect(value[0]).To(Equal(svhRequest.Headers[strings.ToLower(k)]))
+			}
 		})
 
 		basePathRequest := getProxyRequest("/app1/orders", "GET")
