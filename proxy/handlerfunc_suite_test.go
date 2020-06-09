@@ -1,4 +1,4 @@
-package ginadapter_test
+package proxy_test
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestGin(t *testing.T) {
+func TestHTTPAdapter(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Gin Suite")
+	RunSpecs(t, "HttpAdapter Suite")
 }

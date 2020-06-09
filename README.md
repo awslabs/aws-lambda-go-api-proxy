@@ -25,11 +25,11 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	"github.com/awslabs/aws-lambda-go-api-proxy/proxy"
 	"github.com/gin-gonic/gin"
 )
 
-var ginLambda *ginadapter.GinLambda
+var adapter *proxy.Adapter
 
 func init() {
 	// stdout and stderr are sent to AWS CloudWatch Logs
@@ -41,12 +41,12 @@ func init() {
 		})
 	})
 
-	ginLambda = ginadapter.New(r)
+	adapter = proxy.NewAdapter(r)
 }
 
 func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	// If no name is provided in the HTTP request body, throw an error
-	return ginLambda.ProxyWithContext(ctx, req)
+	return adapter.ProxyWithContext(ctx, req)
 }
 
 func main() {
@@ -93,19 +93,6 @@ log.Println(apiGwContext.Stage)
 // stage variables are stored in a map[string]string
 stageVarValue := apiGwStageVars["MyStageVar"]
 ```
-
-## Supporting other frameworks
-The `aws-lambda-go-api-proxy`, alongside the various adapters, declares a `core` package. The `core` package, contains utility methods and interfaces to translate API Gateway proxy events into Go's default `http.Request` and `http.ResponseWriter` objects.
-
-You can see that the [`ginlambda.go`](gin/adapter.go) file extends the `RequestAccessor` struct defined in the [`request.go`](core/request.go) file.  `RequestAccessor` gives you access to the `ProxyEventToHTTPRequest()` method.
-
-The `GinLambda` object is initialized with an instance of `gin.Engine`. `gin.Engine` implements methods defined in the `http.Handler` interface.
-
-The `Proxy` method of the `GinLambda` object simply receives the `events.APIGatewayProxyRequest` object and uses the `ProxyEventToHTTPRequest()` method to convert it into an `http.Request` object. Next, it creates a new `ProxyResponseWriter` object (defined in the [`response.go`](core/response.go)) file and passes both request and response writer to the `ServeHTTP` method of the `gin.Engine`.
-
-The `ProxyResponseWriter` exports a method called `GetProxyResponse()` to generate an `events.APIGatewayProxyResponse` object from the data written to the response writer.
-
-Support for frameworks other than Gin can rely on the same methods from the `core` package and swap the `gin.Engine` object for the relevant framework's object.
 
 ## License
 
