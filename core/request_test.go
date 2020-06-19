@@ -244,8 +244,8 @@ var _ = Describe("RequestAccessor tests", func() {
 			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
 			Expect(err).To(BeNil())
 
-			Expect(basicRequest.RequestContext.DomainName).To(Equal("https://" + httpReq.Host))
-			Expect(basicRequest.RequestContext.DomainName).To(Equal("https://" + httpReq.URL.Host))
+			Expect(basicRequest.RequestContext.DomainName).To(Equal(httpReq.Host))
+			Expect(basicRequest.RequestContext.DomainName).To(Equal(httpReq.URL.Host))
 		})
 
 		It("Uses a custom hostname", func() {
