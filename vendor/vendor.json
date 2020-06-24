@@ -3,13 +3,13 @@
 	"ignore": "test",
 	"package": [
 		{
-			"checksumSHA1": "60T22joBzjxNa8yKzW0V4egimZI=",
+			"checksumSHA1": "7udeaLOJs0KkZCqN02ndEtOk/+s=",
 			"path": "github.com/aws/aws-lambda-go/events",
-			"revision": "dcf76fe64fb68bc66dd3522c904ccf5ff1b2710a",
-			"revisionTime": "2019-01-29T19:04:57Z"
+			"revision": "26aa36445a99488623e4b21c0e5c0b4dc684eff9",
+			"revisionTime": "2020-05-30T01:27:16Z"
 		},
 		{
-			"checksumSHA1": "trfV9u2UzDAypLfWLdFApLNWj0k=",
+			"checksumSHA1": "SXH3An37BX9zsZA/WmH3MjDqhB4=",
 			"path": "github.com/aws/aws-lambda-go/lambda",
 			"revision": "dcf76fe64fb68bc66dd3522c904ccf5ff1b2710a",
 			"revisionTime": "2019-01-29T19:04:57Z"

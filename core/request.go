@@ -21,12 +21,9 @@ import (
 
 // CustomHostVariable is the name of the environment variable that contains
 // the custom hostname for the request. If this variable is not set the framework
-// reverts to `DefaultServerAddress`. The value for a custom host should include
-// a protocol: http://my-custom.host.com
+// reverts to `RequestContext.DomainName`. The value for a custom host should
+// include a protocol: http://my-custom.host.com
 const CustomHostVariable = "GO_API_HOST"
-
-// DefaultServerAddress is prepended to the path of each incoming reuqest
-const DefaultServerAddress = "https://aws-serverless-go-api.com"
 
 // APIGwContextHeader is the custom header key used to store the
 // API Gateway context. To access the Context properties use the
@@ -149,7 +146,7 @@ func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*ht
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
-	serverAddress := DefaultServerAddress
+	serverAddress := "https://" + req.RequestContext.DomainName
 	if customAddress, ok := os.LookupEnv(CustomHostVariable); ok {
 		serverAddress = customAddress
 	}

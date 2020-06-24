@@ -287,12 +287,13 @@ var _ = Describe("RequestAccessor tests", func() {
 		It("Populates the default hostname correctly", func() {
 
 			basicRequest := getProxyRequest("orders", "GET")
+			basicRequest.RequestContext = getRequestContext()
 			accessor := core.RequestAccessor{}
 			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
 			Expect(err).To(BeNil())
 
-			Expect(core.DefaultServerAddress).To(Equal("https://" + httpReq.Host))
-			Expect(core.DefaultServerAddress).To(Equal("https://" + httpReq.URL.Host))
+			Expect(basicRequest.RequestContext.DomainName).To(Equal(httpReq.Host))
+			Expect(basicRequest.RequestContext.DomainName).To(Equal(httpReq.URL.Host))
 		})
 
 		It("Uses a custom hostname", func() {
@@ -336,6 +337,7 @@ func getRequestContext() events.APIGatewayProxyRequestContext {
 		RequestID: "x",
 		APIID:     "x",
 		Stage:     "prod",
+		DomainName: "12abcdefgh.execute-api.us-east-2.amazonaws.com",
 	}
 }
 
