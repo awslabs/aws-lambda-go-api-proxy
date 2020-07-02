@@ -97,7 +97,7 @@ stageVarValue := apiGwStageVars["MyStageVar"]
 ## Supporting other frameworks
 The `aws-lambda-go-api-proxy`, alongside the various adapters, declares a `core` package. The `core` package, contains utility methods and interfaces to translate API Gateway proxy events into Go's default `http.Request` and `http.ResponseWriter` objects.
 
-You can see that the [`ginlambda.go`](gin/adapter.go) file extends the `RequestAccesor` struct defined in the [`request.go`](core/request.go) file.  `RequestAccessor` gives you access to the `ProxyEventToHTTPRequest()` method.
+You can see that the [`ginlambda.go`](gin/adapter.go) file extends the `RequestAccessor` struct defined in the [`request.go`](core/request.go) file.  `RequestAccessor` gives you access to the `ProxyEventToHTTPRequest()` method.
 
 The `GinLambda` object is initialized with an instance of `gin.Engine`. `gin.Engine` implements methods defined in the `http.Handler` interface.
 
