@@ -20,8 +20,7 @@ import (
 // creates a proxy response object from the *fiber.Ctx
 type FiberLambda struct {
 	core.RequestAccessor
-	app     *fiber.App
-	handler fasthttp.RequestHandler
+	app *fiber.App
 }
 
 // New creates a new instance of the FiberLambda object.
@@ -99,7 +98,7 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	fctx.Init(&req, remoteAddr, nil)
 
 	// Execute fiber Ctx
-	f.handler(&fctx)
+	f.app.Handler()(&fctx)
 	// Convert fasthttp Ctx > net/http
 	fctx.Response.Header.VisitAll(func(k, v []byte) {
 		sk := string(k)
