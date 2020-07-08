@@ -15,7 +15,7 @@ require (
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-chi/chi v4.1.2+incompatible
 	github.com/go-playground/validator/v10 v10.3.0 // indirect
-	github.com/gofiber/fiber v1.12.4
+	github.com/gofiber/fiber v1.12.5
 	github.com/google/go-querystring v1.0.0 // indirect
 	github.com/gorilla/mux v1.7.4
 	github.com/imkira/go-interpol v1.1.0 // indirect
