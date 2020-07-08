@@ -103,7 +103,7 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	fctx.Response.Header.VisitAll(func(k, v []byte) {
 		sk := string(k)
 		sv := string(v)
-		w.Header().Add(sk, sv)
+		w.Header().Set(sk, sv)
 	})
 	w.WriteHeader(fctx.Response.StatusCode())
 	_, _ = w.Write(fctx.Response.Body())
