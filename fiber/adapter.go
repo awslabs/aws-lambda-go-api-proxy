@@ -12,6 +12,7 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 	"github.com/gofiber/fiber"
+	"github.com/gofiber/utils"
 	"github.com/valyala/fasthttp"
 )
 
@@ -73,8 +74,8 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w,
-			http.StatusText(http.StatusInternalServerError),
-			http.StatusInternalServerError)
+			utils.StatusMessage(fiber.StatusInternalServerError),
+			fiber.StatusInternalServerError)
 		return
 	}
 	req.Header.SetMethod(r.Method)
@@ -89,7 +90,7 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	_, _ = req.BodyWriter().Write(body)
 	remoteAddr, err := net.ResolveTCPAddr("tcp", r.RemoteAddr)
 	if err != nil {
-		http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
+		http.Error(w, utils.StatusMessage(fiber.StatusInternalServerError), fiber.StatusInternalServerError)
 		return
 	}
 
