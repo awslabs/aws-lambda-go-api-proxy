@@ -73,9 +73,7 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	// Convert net/http -> fasthttp request
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		http.Error(w,
-			utils.StatusMessage(fiber.StatusInternalServerError),
-			fiber.StatusInternalServerError)
+		http.Error(w, utils.StatusMessage(fiber.StatusInternalServerError), fiber.StatusInternalServerError)
 		return
 	}
 	req.Header.SetMethod(r.Method)
