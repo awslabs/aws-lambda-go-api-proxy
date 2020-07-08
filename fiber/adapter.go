@@ -97,17 +97,15 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	// New fasthttp Ctx
 	var fctx fasthttp.RequestCtx
 	fctx.Init(&req, remoteAddr, nil)
-	// New fiber Ctx
-	ctx := f.app.AcquireCtx(&fctx)
+
 	// Execute fiber Ctx
 	f.handler(&fctx)
 	// Convert fasthttp Ctx > net/http
-	ctx.Fasthttp.Response.Header.VisitAll(func(k, v []byte) {
+	fctx.Response.Header.VisitAll(func(k, v []byte) {
 		sk := string(k)
 		sv := string(v)
 		w.Header().Add(sk, sv)
 	})
-	w.WriteHeader(ctx.Fasthttp.Response.StatusCode())
-	_, _ = w.Write(ctx.Fasthttp.Response.Body())
-	f.app.ReleaseCtx(ctx)
+	w.WriteHeader(fctx.Response.StatusCode())
+	_, _ = w.Write(fctx.Response.Body())
 }
