@@ -96,7 +96,7 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	var fctx fasthttp.RequestCtx
 	fctx.Init(&req, remoteAddr, nil)
 
-	// Execute fiber Ctx
+	// Pass RequestCtx to Fiber router
 	f.app.Handler()(&fctx)
 	// Convert fasthttp Ctx > net/http
 	fctx.Response.Header.VisitAll(func(k, v []byte) {
