@@ -29,8 +29,7 @@ type FiberLambda struct {
 // It returns the initialized instance of the FiberLambda object.
 func New(app *fiber.App) *FiberLambda {
 	return &FiberLambda{
-		app:     app,
-		handler: app.Handler(),
+		app: app,
 	}
 }
 
