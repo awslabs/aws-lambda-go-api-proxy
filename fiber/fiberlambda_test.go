@@ -1,6 +1,7 @@
 package fiberadapter_test
 
 import (
+	"context"
 	"log"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -28,7 +29,12 @@ var _ = Describe("FiberLambda tests", func() {
 				HTTPMethod: "GET",
 			}
 
-			resp, err := adapter.Proxy(req)
+			resp, err := adapter.ProxyWithContext(context.Background(), req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+
+			resp, err = adapter.Proxy(req)
 
 			Expect(err).To(BeNil())
 			Expect(resp.StatusCode).To(Equal(200))
