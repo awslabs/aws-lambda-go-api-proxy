@@ -200,9 +200,9 @@ func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*ht
 		}
 	}
 
-  httpRequest.RequestURI = httpRequest.URL.RequestURI()
+	httpRequest.RequestURI = httpRequest.URL.RequestURI()
 
-  return httpRequest, nil
+	return httpRequest, nil
 }
 
 func addToHeader(req *http.Request, apiGwRequest events.APIGatewayProxyRequest) (*http.Request, error) {
