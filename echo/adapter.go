@@ -9,7 +9,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/core"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
 // EchoLambda makes it easy to send API Gateway proxy events to a echo.Echo.
