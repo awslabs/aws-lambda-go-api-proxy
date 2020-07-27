@@ -6,7 +6,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/iris"
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
