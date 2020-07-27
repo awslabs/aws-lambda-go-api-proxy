@@ -333,10 +333,10 @@ func getProxyRequest(path string, method string) events.APIGatewayProxyRequest {
 
 func getRequestContext() events.APIGatewayProxyRequestContext {
 	return events.APIGatewayProxyRequestContext{
-		AccountID: "x",
-		RequestID: "x",
-		APIID:     "x",
-		Stage:     "prod",
+		AccountID:  "x",
+		RequestID:  "x",
+		APIID:      "x",
+		Stage:      "prod",
 		DomainName: "12abcdefgh.execute-api.us-east-2.amazonaws.com",
 	}
 }

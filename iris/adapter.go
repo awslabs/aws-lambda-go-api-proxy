@@ -9,7 +9,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/core"
-	"github.com/kataras/iris"
+	"github.com/kataras/iris/v12"
 )
 
 // IrisLambda makes it easy to send API Gateway proxy events to a iris.Application.
