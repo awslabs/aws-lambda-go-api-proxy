@@ -37,7 +37,7 @@ func NewProxyResponseWriter() *ProxyResponseWriter {
 }
 
 func (r *ProxyResponseWriter) CloseNotify() <-chan bool {
-	ch := make(chan bool)
+	ch := make(chan bool, 1)
 
 	r.observers = append(r.observers, ch)
 
