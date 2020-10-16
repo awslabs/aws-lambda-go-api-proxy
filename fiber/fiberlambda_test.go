@@ -6,7 +6,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	fiberadaptor "github.com/awslabs/aws-lambda-go-api-proxy/fiber"
-	"github.com/gofiber/fiber"
+	"github.com/gofiber/fiber/v2"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,9 +17,9 @@ var _ = Describe("FiberLambda tests", func() {
 		It("Proxies the event correctly", func() {
 			log.Println("Starting test")
 			app := fiber.New()
-			app.Get("/ping", func(c *fiber.Ctx) {
+			app.Get("/ping", func(c *fiber.Ctx) error {
 				log.Println("Handler!!")
-				c.SendString("pong")
+				return c.SendString("pong")
 			})
 
 			adapter := fiberadaptor.New(app)

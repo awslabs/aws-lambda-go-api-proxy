@@ -11,8 +11,8 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/awslabs/aws-lambda-go-api-proxy/core"
-	"github.com/gofiber/fiber"
-	"github.com/gofiber/utils"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/utils"
 	"github.com/valyala/fasthttp"
 )
 
@@ -68,23 +68,27 @@ func (f *FiberLambda) proxyInternal(req *http.Request, err error) (events.APIGat
 
 func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	// New fasthttp request
-	var req fasthttp.Request
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
 	// Convert net/http -> fasthttp request
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, utils.StatusMessage(fiber.StatusInternalServerError), fiber.StatusInternalServerError)
 		return
 	}
+	req.Header.SetContentLength(len(body))
+	_, _ = req.BodyWriter().Write(body)
+
 	req.Header.SetMethod(r.Method)
 	req.SetRequestURI(r.RequestURI)
-	req.Header.SetContentLength(len(body))
 	req.SetHost(r.Host)
 	for key, val := range r.Header {
 		for _, v := range val {
 			req.Header.Add(key, v)
 		}
 	}
-	_, _ = req.BodyWriter().Write(body)
+
 	remoteAddr, err := net.ResolveTCPAddr("tcp", r.RemoteAddr)
 	if err != nil {
 		http.Error(w, utils.StatusMessage(fiber.StatusInternalServerError), fiber.StatusInternalServerError)
@@ -93,16 +97,19 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 
 	// New fasthttp Ctx
 	var fctx fasthttp.RequestCtx
-	fctx.Init(&req, remoteAddr, nil)
+	fctx.Init(req, remoteAddr, nil)
 
 	// Pass RequestCtx to Fiber router
 	f.app.Handler()(&fctx)
-	// Convert fasthttp Ctx > net/http
+
+	// Set response headers
 	fctx.Response.Header.VisitAll(func(k, v []byte) {
-		sk := string(k)
-		sv := string(v)
-		w.Header().Set(sk, sv)
+		w.Header().Set(utils.UnsafeString(k), utils.UnsafeString(v))
 	})
+
+	// Set response statuscode
 	w.WriteHeader(fctx.Response.StatusCode())
+
+	// Set response body
 	_, _ = w.Write(fctx.Response.Body())
 }
