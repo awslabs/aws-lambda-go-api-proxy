@@ -5,8 +5,8 @@ import (
 	"log"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/awslabs/aws-lambda-go-api-proxy/iris"
-	"github.com/kataras/iris"
+	irisadapter "github.com/awslabs/aws-lambda-go-api-proxy/iris"
+	"github.com/kataras/iris/v12"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -17,7 +17,7 @@ var _ = Describe("IrisLambda tests", func() {
 		It("Proxies the event correctly", func() {
 			log.Println("Starting test")
 
-			app := iris.Default()
+			app := iris.New()
 			app.Get("/ping", func(ctx iris.Context) {
 				log.Println("Handler!!")
 				ctx.WriteString("pong")

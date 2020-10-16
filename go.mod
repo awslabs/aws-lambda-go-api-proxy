@@ -1,6 +1,6 @@
 module github.com/awslabs/aws-lambda-go-api-proxy
 
-go 1.12
+go 1.14
 
 require (
 	github.com/Joker/jade v1.0.0 // indirect
