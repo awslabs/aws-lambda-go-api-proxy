@@ -122,6 +122,12 @@ func (r *RequestAccessorV2) EventToRequest(req events.APIGatewayV2HTTPRequest) (
 	}
 
 	path := req.RawPath
+
+	//if RawPath empty is, populate from request context
+	if len(path) == 0 {
+		path = req.RequestContext.HTTP.Path
+	}
+
 	if r.stripBasePath != "" && len(r.stripBasePath) > 1 {
 		if strings.HasPrefix(path, r.stripBasePath) {
 			path = strings.Replace(path, r.stripBasePath, "", 1)
