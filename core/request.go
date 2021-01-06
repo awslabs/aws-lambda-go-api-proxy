@@ -52,7 +52,7 @@ func (r *RequestAccessor) GetAPIGatewayContext(req *http.Request) (events.APIGat
 	context := events.APIGatewayProxyRequestContext{}
 	err := json.Unmarshal([]byte(req.Header.Get(APIGwContextHeader)), &context)
 	if err != nil {
-		log.Println("Erorr while unmarshalling context")
+		log.Println("Error while unmarshalling context")
 		log.Println(err)
 		return events.APIGatewayProxyRequestContext{}, err
 	}
@@ -70,7 +70,7 @@ func (r *RequestAccessor) GetAPIGatewayStageVars(req *http.Request) (map[string]
 	}
 	err := json.Unmarshal([]byte(req.Header.Get(APIGwStageVarsHeader)), &stageVars)
 	if err != nil {
-		log.Println("Erorr while unmarshalling stage variables")
+		log.Println("Error while unmarshalling stage variables")
 		log.Println(err)
 		return stageVars, err
 	}
