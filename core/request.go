@@ -19,21 +19,23 @@ import (
 	"github.com/aws/aws-lambda-go/lambdacontext"
 )
 
-// CustomHostVariable is the name of the environment variable that contains
-// the custom hostname for the request. If this variable is not set the framework
-// reverts to `RequestContext.DomainName`. The value for a custom host should
-// include a protocol: http://my-custom.host.com
-const CustomHostVariable = "GO_API_HOST"
+const (
+	// CustomHostVariable is the name of the environment variable that contains
+	// the custom hostname for the request. If this variable is not set the framework
+	// reverts to `RequestContext.DomainName`. The value for a custom host should
+	// include a protocol: http://my-custom.host.com
+	CustomHostVariable = "GO_API_HOST"
 
-// APIGwContextHeader is the custom header key used to store the
-// API Gateway context. To access the Context properties use the
-// GetAPIGatewayContext method of the RequestAccessor object.
-const APIGwContextHeader = "X-GoLambdaProxy-ApiGw-Context"
+	// APIGwContextHeader is the custom header key used to store the
+	// API Gateway context. To access the Context properties use the
+	// GetAPIGatewayContext method of the RequestAccessor object.
+	APIGwContextHeader = "X-GoLambdaProxy-ApiGw-Context"
 
-// APIGwStageVarsHeader is the custom header key used to store the
-// API Gateway stage variables. To access the stage variable values
-// use the GetAPIGatewayStageVars method of the RequestAccessor object.
-const APIGwStageVarsHeader = "X-GoLambdaProxy-ApiGw-StageVars"
+	// APIGwStageVarsHeader is the custom header key used to store the
+	// API Gateway stage variables. To access the stage variable values
+	// use the GetAPIGatewayStageVars method of the RequestAccessor object.
+	APIGwStageVarsHeader = "X-GoLambdaProxy-ApiGw-StageVars"
+)
 
 // RequestAccessor objects give access to custom API Gateway properties
 // in the request.
