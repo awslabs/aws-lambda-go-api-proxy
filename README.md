@@ -13,8 +13,8 @@ $ go get github.com/aws/aws-lambda-go/lambda
 $ go get github.com/awslabs/aws-lambda-go-api-proxy/...
 ```
 
-Following the instructions from the [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/go-programming-model-handler-types.html), we need to declare a `Handler` method for our main package. We will declare a `ginadapter.GinLambda` object
-in the global scope, initialized once it in the Handler with all its API methods, and then use the `Proxy` method to translate requests and responses
+Following the instructions from the [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/go-programming-model-handler-types.html), we need to declare a `Handler` method for our main package.
+We will declare a `httpadapter.HandlerAdapter` object in the global scope, initialized once it in the Handler with all its API methods, and then use the `Proxy` method to translate requests and responses
 
 ```go
 package main
@@ -25,11 +25,11 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
 	"github.com/gin-gonic/gin"
 )
 
-var ginLambda *ginadapter.GinLambda
+var ginLambda *httpadapter.HandlerAdapter
 
 func init() {
 	// stdout and stderr are sent to AWS CloudWatch Logs
@@ -41,7 +41,7 @@ func init() {
 		})
 	})
 
-	ginLambda = ginadapter.New(r)
+	ginLambda = httpadapter.New(r)
 }
 
 func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
@@ -78,10 +78,10 @@ $ aws cloudformation deploy --template-file output-sam.yaml --stack-name YOUR_ST
 Using the CloudFormation console, you can find the URL for the newly created API endpoint in the `Outputs` tab of the sample stack - it looks sample like this: `https://xxxxxxxxx.execute-api.xx-xxxx-x.amazonaws.com/Prod/pets`. Open a browser window and try to call the URL.
 
 ## API Gateway context and stage variables
-The `RequestAccessor` object, and therefore `GinLambda`, automatically marshals the API Gateway request context and stage variables objects and stores them in custom headers in the request: `X-GinLambda-ApiGw-Context` and `X-GinLambda-ApiGw-StageVars`. While you could manually unmarshal the json content into the `events.APIGatewayProxyRequestContext` and `map[string]string` objects, the library exports two utility methods to give you easy access to the data.
+The `RequestAccessor` object, and therefore `HandlerAdapter`, automatically marshals the API Gateway request context and stage variables objects and stores them in custom headers in the request: `X-GinLambda-ApiGw-Context` and `X-GinLambda-ApiGw-StageVars`. While you could manually unmarshal the json content into the `events.APIGatewayProxyRequestContext` and `map[string]string` objects, the library exports two utility methods to give you easy access to the data.
 
 ```go
-// the methods are available in your instance of the GinLambda
+// the methods are available in your instance of the HandlerAdapter
 // object and receive the http.Request object
 apiGwContext := ginLambda.GetAPIGatewayContext(c.Request)
 apiGwStageVars := ginLambda.GetAPIGatewayStageVars(c.Request)
@@ -97,11 +97,11 @@ stageVarValue := apiGwStageVars["MyStageVar"]
 ## Supporting other frameworks
 The `aws-lambda-go-api-proxy`, alongside the various adapters, declares a `core` package. The `core` package, contains utility methods and interfaces to translate API Gateway proxy events into Go's default `http.Request` and `http.ResponseWriter` objects.
 
-You can see that the [`ginlambda.go`](gin/adapter.go) file extends the `RequestAccessor` struct defined in the [`request.go`](core/request.go) file.  `RequestAccessor` gives you access to the `ProxyEventToHTTPRequest()` method.
+You can see that the [`adapter.go`](httpadapter/adapter.go) file extends the `RequestAccessor` struct defined in the [`request.go`](core/request.go) file.  `RequestAccessor` gives you access to the `ProxyEventToHTTPRequest()` method.
 
-The `GinLambda` object is initialized with an instance of `gin.Engine`. `gin.Engine` implements methods defined in the `http.Handler` interface.
+The `HandlerAdapter` object is initialized with an instance of `gin.Engine`. `gin.Engine` implements methods defined in the `http.Handler` interface.
 
-The `Proxy` method of the `GinLambda` object simply receives the `events.APIGatewayProxyRequest` object and uses the `ProxyEventToHTTPRequest()` method to convert it into an `http.Request` object. Next, it creates a new `ProxyResponseWriter` object (defined in the [`response.go`](core/response.go)) file and passes both request and response writer to the `ServeHTTP` method of the `gin.Engine`.
+The `Proxy` method of the `HandlerAdapter` object simply receives the `events.APIGatewayProxyRequest` object and uses the `ProxyEventToHTTPRequest()` method to convert it into an `http.Request` object. Next, it creates a new `ProxyResponseWriter` object (defined in the [`response.go`](core/response.go)) file and passes both request and response writer to the `ServeHTTP` method of the `gin.Engine`.
 
 The `ProxyResponseWriter` exports a method called `GetProxyResponse()` to generate an `events.APIGatewayProxyResponse` object from the data written to the response writer.
 
