@@ -1,5 +1,5 @@
 ## AWS Lambda Go Api Proxy [![Build Status](https://travis-ci.org/awslabs/aws-lambda-go-api-proxy.svg?branch=master)](https://travis-ci.org/awslabs/aws-lambda-go-api-proxy)
-aws-lambda-go-api-proxy makes it easy to run Golang APIs written with frameworks such as [Gin](https://gin-gonic.github.io/gin/) with AWS Lambda and Amazon API Gateway.
+aws-lambda-go-api-proxy makes it easy to run Golang APIs written with frameworks such as [Gin](https://github.com/gin-gonic/gin) with AWS Lambda and Amazon API Gateway.
 
 ## Getting started
 The first step is to install the required dependencies
