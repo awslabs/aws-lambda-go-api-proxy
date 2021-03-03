@@ -85,7 +85,7 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	req.SetHost(r.Host)
 	for key, val := range r.Header {
 		for _, v := range val {
-			req.Header.Add(key, v)
+			req.Header.Set(key, v)
 		}
 	}
 
