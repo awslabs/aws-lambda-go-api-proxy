@@ -85,21 +85,8 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	req.SetHost(r.Host)
 	for key, val := range r.Header {
 		for _, v := range val {
-			// Reference: header.go SetCanonical https://github.com/valyala/fasthttp/blob/1b61ca2e36ab3b581d667156c6b9b9141dc69827/header.go#L986-L1016
-			switch string(key) {
-			case fiber.HeaderHost:
-				req.Header.Set(key, v)
-			case fiber.HeaderContentType:
-				req.Header.Set(key, v)
-			case fiber.HeaderUserAgent:
-				req.Header.Set(key, v)
-			case fiber.HeaderCookie:
-				req.Header.Set(key, v)
-			case fiber.HeaderContentLength:
-				req.Header.Set(key, v)
-			case fiber.HeaderConnection:
-				req.Header.Set(key, v)
-			case fiber.HeaderTransferEncoding:
+			switch key {
+			case fiber.HeaderContentType, fiber.HeaderUserAgent, fiber.HeaderContentLength, fiber.HeaderConnection, fiber.HeaderTransferEncoding:
 				req.Header.Set(key, v)
 			default:
 				req.Header.Add(key, v)

@@ -3,7 +3,6 @@ package fiberadapter_test
 import (
 	"context"
 	"log"
-	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	fiberadaptor "github.com/awslabs/aws-lambda-go-api-proxy/fiber"
@@ -20,12 +19,20 @@ var _ = Describe("FiberLambda tests", func() {
 
 			app := fiber.New()
 			app.Get("/ping", func(c *fiber.Ctx) error {
+				c.Next()
 				Expect(c.Get(fiber.HeaderUserAgent)).To(Equal("fiber"))
 				Expect(c.Get(fiber.HeaderContentType)).To(Equal(fiber.MIMEApplicationJSONCharsetUTF8))
 				Expect(c.Get(fiber.HeaderReferer)).To(Equal("https://github.com/gofiber/fiber"))
+				Expect(c.Get(fiber.HeaderConnection)).To(Equal("Keep-Alive"))
+				Expect(c.Get(fiber.HeaderKeepAlive)).To(Equal("timeout=5, max=1000"))
+
+				Expect(c.Cookies("a")).To(Equal("b"))
+				Expect(c.Cookies("b")).To(Equal("c"))
+				Expect(c.Cookies("c")).To(Equal("d"))
+
 				c.Context().Request.Header.VisitAll(func(key, value []byte) {
 					if string(key) == "K1" {
-						Expect("v1v2").To(Equal(strings.Join([]string{"v1", "v2"}, "")))
+						Expect(c.Get("K1")).To(Or(Equal("v1"), Equal("v2")))
 					}
 				})
 				return c.SendString("pong")
@@ -37,10 +44,13 @@ var _ = Describe("FiberLambda tests", func() {
 				Path:       "/ping",
 				HTTPMethod: "GET",
 				MultiValueHeaders: map[string][]string{
-					fiber.HeaderReferer:     {"https://github.com/gofiber/fiber"},
-					fiber.HeaderUserAgent:   {"fiber"},
-					fiber.HeaderContentType: {fiber.MIMEApplicationJSONCharsetUTF8},
-					"K1":                    {"v1", "v2"},
+					fiber.HeaderConnection:       {"Keep-Alive"},
+					fiber.HeaderKeepAlive:        {"timeout=5, max=1000"},
+					fiber.HeaderUserAgent:        {"fiber"},
+					fiber.HeaderContentType:      {fiber.MIMEApplicationJSONCharsetUTF8},
+					fiber.HeaderReferer:          {"https://github.com/gofiber/fiber"},
+					"k1":                         {"v1", "v2"},
+					"cookie":                     {"a=b", "b=c;c=d"},
 				},
 			}
 
