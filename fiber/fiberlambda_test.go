@@ -22,9 +22,10 @@ var _ = Describe("FiberLambda tests", func() {
 			app.Get("/ping", func(c *fiber.Ctx) error {
 				Expect(c.Get(fiber.HeaderUserAgent)).To(Equal("fiber"))
 				Expect(c.Get(fiber.HeaderContentType)).To(Equal(fiber.MIMEApplicationJSONCharsetUTF8))
+				Expect(c.Get(fiber.HeaderReferer)).To(Equal("https://github.com/gofiber/fiber"))
 				c.Context().Request.Header.VisitAll(func(key, value []byte) {
 					if string(key) == "K1" {
-						Expect("v1v2").To(Equal(strings.Join([]string{"v1", "v2"},"")))
+						Expect("v1v2").To(Equal(strings.Join([]string{"v1", "v2"}, "")))
 					}
 				})
 				return c.SendString("pong")
@@ -36,6 +37,7 @@ var _ = Describe("FiberLambda tests", func() {
 				Path:       "/ping",
 				HTTPMethod: "GET",
 				MultiValueHeaders: map[string][]string{
+					fiber.HeaderReferer:     {"https://github.com/gofiber/fiber"},
 					fiber.HeaderUserAgent:   {"fiber"},
 					fiber.HeaderContentType: {fiber.MIMEApplicationJSONCharsetUTF8},
 					"K1":                    {"v1", "v2"},
