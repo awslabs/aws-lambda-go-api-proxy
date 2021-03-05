@@ -3,6 +3,7 @@ package fiberadapter_test
 import (
 	"context"
 	"log"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	fiberadaptor "github.com/awslabs/aws-lambda-go-api-proxy/fiber"
@@ -15,13 +16,17 @@ import (
 var _ = Describe("FiberLambda tests", func() {
 	Context("Simple ping request", func() {
 		It("Proxies the event correctly", func() {
-			const AgentGolang = "Agent Gopher/1.16"
 			log.Println("Starting test")
+
 			app := fiber.New()
 			app.Get("/ping", func(c *fiber.Ctx) error {
-				log.Println("Handler!!")
-				Expect(c.Get(fiber.HeaderUserAgent, "")).To(Equal(AgentGolang))
-				Expect(c.Get(fiber.HeaderContentType, "")).To(Equal(fiber.MIMEApplicationJSONCharsetUTF8))
+				Expect(c.Get(fiber.HeaderUserAgent)).To(Equal("fiber"))
+				Expect(c.Get(fiber.HeaderContentType)).To(Equal(fiber.MIMEApplicationJSONCharsetUTF8))
+				c.Context().Request.Header.VisitAll(func(key, value []byte) {
+					if string(key) == "K1" {
+						Expect("v1v2").To(Equal(strings.Join([]string{"v1", "v2"},"")))
+					}
+				})
 				return c.SendString("pong")
 			})
 
@@ -30,9 +35,10 @@ var _ = Describe("FiberLambda tests", func() {
 			req := events.APIGatewayProxyRequest{
 				Path:       "/ping",
 				HTTPMethod: "GET",
-				Headers: map[string]string{
-					fiber.HeaderUserAgent:   AgentGolang,
-					fiber.HeaderContentType: fiber.MIMEApplicationJSONCharsetUTF8,
+				MultiValueHeaders: map[string][]string{
+					fiber.HeaderUserAgent:   {"fiber"},
+					fiber.HeaderContentType: {fiber.MIMEApplicationJSONCharsetUTF8},
+					"K1":                    {"v1", "v2"},
 				},
 			}
 
@@ -40,11 +46,7 @@ var _ = Describe("FiberLambda tests", func() {
 
 			Expect(err).To(BeNil())
 			Expect(resp.StatusCode).To(Equal(200))
-
-			resp, err = adapter.Proxy(req)
-
-			Expect(err).To(BeNil())
-			Expect(resp.StatusCode).To(Equal(200))
+			Expect(resp.Body).To(Equal("pong"))
 		})
 	})
 })
