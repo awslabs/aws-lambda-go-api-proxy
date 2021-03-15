@@ -12,8 +12,10 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-const defaultStatusCode = -1
-const contentTypeHeaderKey = "Content-Type"
+const (
+	defaultStatusCode    = -1
+	contentTypeHeaderKey = "Content-Type"
+)
 
 // ProxyResponseWriter implements http.ResponseWriter and adds the method
 // necessary to return an events.APIGatewayProxyResponse object
