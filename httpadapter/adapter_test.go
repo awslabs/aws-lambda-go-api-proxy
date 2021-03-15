@@ -13,13 +13,6 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-type handler struct{}
-
-func (h handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	w.Header().Add("unfortunately-required-header", "")
-	fmt.Fprintf(w, "Go Lambda!!")
-}
-
 var _ = Describe("HTTPAdapter tests", func() {
 	Context("Simple ping request", func() {
 		It("Proxies the event correctly", func() {
