@@ -77,6 +77,7 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, utils.StatusMessage(fiber.StatusInternalServerError), fiber.StatusInternalServerError)
 		return
 	}
+	req.Header.SetContentType(r.Header.Get("Content-Type"))
 	req.Header.SetContentLength(len(body))
 	_, _ = req.BodyWriter().Write(body)
 
