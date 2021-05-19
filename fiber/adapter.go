@@ -85,7 +85,12 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	req.SetHost(r.Host)
 	for key, val := range r.Header {
 		for _, v := range val {
-			req.Header.Add(key, v)
+			switch key {
+			case fiber.HeaderContentType, fiber.HeaderUserAgent, fiber.HeaderContentLength, fiber.HeaderConnection, fiber.HeaderTransferEncoding:
+				req.Header.Set(key, v)
+			default:
+				req.Header.Add(key, v)
+			}
 		}
 	}
 
