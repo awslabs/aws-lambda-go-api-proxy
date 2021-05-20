@@ -38,7 +38,7 @@ func (h *GorillaMuxAdapter) ProxyWithContext(ctx context.Context, event events.A
 
 func (h *GorillaMuxAdapter) proxyInternal(req *http.Request, err error) (events.APIGatewayProxyResponse, error) {
 	if err != nil {
-		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
+		return core.InternalServerError(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	w := core.NewProxyResponseWriter()
@@ -46,7 +46,7 @@ func (h *GorillaMuxAdapter) proxyInternal(req *http.Request, err error) (events.
 
 	resp, err := w.GetProxyResponse()
 	if err != nil {
-		return core.GatewayTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
+		return core.InternalServerError(), core.NewLoggedError("Error while generating proxy response: %v", err)
 	}
 
 	return resp, nil

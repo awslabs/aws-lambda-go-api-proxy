@@ -47,7 +47,7 @@ func (g *ChiLambda) ProxyWithContext(ctx context.Context, req events.APIGatewayP
 func (g *ChiLambda) proxyInternal(chiRequest *http.Request, err error) (events.APIGatewayProxyResponse, error) {
 
 	if err != nil {
-		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
+		return core.InternalServerError(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	respWriter := core.NewProxyResponseWriter()
@@ -55,7 +55,7 @@ func (g *ChiLambda) proxyInternal(chiRequest *http.Request, err error) (events.A
 
 	proxyResponse, err := respWriter.GetProxyResponse()
 	if err != nil {
-		return core.GatewayTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
+		return core.InternalServerError(), core.NewLoggedError("Error while generating proxy response: %v", err)
 	}
 
 	return proxyResponse, nil
