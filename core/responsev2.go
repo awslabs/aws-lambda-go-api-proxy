@@ -100,8 +100,14 @@ func (r *ProxyResponseWriterV2) GetProxyResponse() (events.APIGatewayV2HTTPRespo
 		isBase64 = true
 	}
 
+	headers := make(map[string]string)
+	for k, _ := range r.headers {
+		headers[k] = r.headers.Get(k)
+	}
+
 	return events.APIGatewayV2HTTPResponse{
 		StatusCode:        r.status,
+		Headers:           headers,
 		MultiValueHeaders: http.Header(r.headers),
 		Body:              output,
 		IsBase64Encoded:   isBase64,
