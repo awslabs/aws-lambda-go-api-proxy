@@ -7,6 +7,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"net/http"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/aws/aws-lambda-go/events"
@@ -100,10 +101,16 @@ func (r *ProxyResponseWriterV2) GetProxyResponse() (events.APIGatewayV2HTTPRespo
 		isBase64 = true
 	}
 
+	headers := make(map[string]string)
+
+	for headerKey, headerValue := range http.Header(r.headers) {
+		headers[headerKey] = strings.Join(headerValue, ",")
+	}
+
 	return events.APIGatewayV2HTTPResponse{
-		StatusCode:        r.status,
-		MultiValueHeaders: http.Header(r.headers),
-		Body:              output,
-		IsBase64Encoded:   isBase64,
+		StatusCode:      r.status,
+		Headers:         headers,
+		Body:            output,
+		IsBase64Encoded: isBase64,
 	}, nil
 }
