@@ -7,7 +7,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	chiadapter "github.com/awslabs/aws-lambda-go-api-proxy/chi"
-	"github.com/go-chi/chi"
+	"github.com/go-chi/chi/v5"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
