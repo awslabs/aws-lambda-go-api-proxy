@@ -217,6 +217,16 @@ var _ = Describe("RequestAccessor tests", func() {
 			// should fail because using header proxy method
 			Expect(ok).To(BeFalse())
 
+			// overwrite existing context header
+			contextRequestWithHeaders := getProxyRequest("orders", "GET")
+			contextRequestWithHeaders.RequestContext = getRequestContext()
+			contextRequestWithHeaders.Headers = map[string]string{core.APIGwContextHeader: `{"AccountID":"abc123"}`}
+			httpReq, err = accessor.ProxyEventToHTTPRequest(contextRequestWithHeaders)
+			Expect(err).To(BeNil())
+			headerContext, err = accessor.GetAPIGatewayContext(httpReq)
+			Expect(err).To(BeNil())
+			Expect(headerContext.AccountID).To(Equal("x"))
+
 			httpReq, err = accessor.EventToRequestWithContext(context.Background(), contextRequest)
 			Expect(err).To(BeNil())
 			proxyContext, ok = core.GetAPIGatewayContextFromContext(httpReq.Context())
@@ -263,6 +273,16 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect(stageVars["var2"]).ToNot(BeNil())
 			Expect("value1").To(Equal(stageVars["var1"]))
 			Expect("value2").To(Equal(stageVars["var2"]))
+
+			// overwrite existing stagevars header
+			varsRequestWithHeaders := getProxyRequest("orders", "GET")
+			varsRequestWithHeaders.StageVariables = getStageVariables()
+			varsRequestWithHeaders.Headers = map[string]string{core.APIGwStageVarsHeader: `{"var1":"abc123"}`}
+			httpReq, err = accessor.ProxyEventToHTTPRequest(varsRequestWithHeaders)
+			Expect(err).To(BeNil())
+			stageVars, err = accessor.GetAPIGatewayStageVars(httpReq)
+			Expect(err).To(BeNil())
+			Expect(stageVars["var1"]).To(Equal("value1"))
 
 			stageVars, ok := core.GetStageVarsFromContext(httpReq.Context())
 			// not present in context
