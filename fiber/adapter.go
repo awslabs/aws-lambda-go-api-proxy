@@ -21,6 +21,7 @@ import (
 // creates a proxy response object from the *fiber.Ctx
 type FiberLambda struct {
 	core.RequestAccessor
+	v2  core.RequestAccessorV2
 	app *fiber.App
 }
 
@@ -41,12 +42,24 @@ func (f *FiberLambda) Proxy(req events.APIGatewayProxyRequest) (events.APIGatewa
 	return f.proxyInternal(fiberRequest, err)
 }
 
+// ProxyV2 is just same as Proxy() but for APIGateway HTTP payload v2
+func (f *FiberLambda) ProxyV2(req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	fiberRequest, err := f.v2.ProxyEventToHTTPRequest(req)
+	return f.proxyInternalV2(fiberRequest, err)
+}
+
 // ProxyWithContext receives context and an API Gateway proxy event,
 // transforms them into an http.Request object, and sends it to the echo.Echo for routing.
 // It returns a proxy response object generated from the http.ResponseWriter.
 func (f *FiberLambda) ProxyWithContext(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
 	fiberRequest, err := f.EventToRequestWithContext(ctx, req)
 	return f.proxyInternal(fiberRequest, err)
+}
+
+// ProxyWithContextV2 is just same as ProxyWithContext() but for APIGateway HTTP payload v2
+func (f *FiberLambda) ProxyWithContextV2(ctx context.Context, req events.APIGatewayV2HTTPRequest) (events.APIGatewayV2HTTPResponse, error) {
+	fiberRequest, err := f.v2.EventToRequestWithContext(ctx, req)
+	return f.proxyInternalV2(fiberRequest, err)
 }
 
 func (f *FiberLambda) proxyInternal(req *http.Request, err error) (events.APIGatewayProxyResponse, error) {
@@ -61,6 +74,23 @@ func (f *FiberLambda) proxyInternal(req *http.Request, err error) (events.APIGat
 	proxyResponse, err := resp.GetProxyResponse()
 	if err != nil {
 		return core.GatewayTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
+	}
+
+	return proxyResponse, nil
+}
+
+func (f *FiberLambda) proxyInternalV2(req *http.Request, err error) (events.APIGatewayV2HTTPResponse, error) {
+
+	if err != nil {
+		return core.GatewayTimeoutV2(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
+	}
+
+	resp := core.NewProxyResponseWriterV2()
+	f.adaptor(resp, req)
+
+	proxyResponse, err := resp.GetProxyResponse()
+	if err != nil {
+		return core.GatewayTimeoutV2(), core.NewLoggedError("Error while generating proxy response: %v", err)
 	}
 
 	return proxyResponse, nil
