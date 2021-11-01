@@ -102,8 +102,13 @@ func (r *ProxyResponseWriterV2) GetProxyResponse() (events.APIGatewayV2HTTPRespo
 	}
 
 	headers := make(map[string]string)
+	cookies := make([]string, 0)
 
 	for headerKey, headerValue := range http.Header(r.headers) {
+		if strings.EqualFold("set-cookie", headerKey) {
+			cookies = append(cookies, headerValue...)
+			continue
+		}
 		headers[headerKey] = strings.Join(headerValue, ",")
 	}
 
@@ -112,5 +117,6 @@ func (r *ProxyResponseWriterV2) GetProxyResponse() (events.APIGatewayV2HTTPRespo
 		Headers:         headers,
 		Body:            output,
 		IsBase64Encoded: isBase64,
+		Cookies:         cookies,
 	}, nil
 }

@@ -320,6 +320,19 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 			Expect(myCustomHost).To(Equal("http://" + httpReq.URL.Host))
 			os.Unsetenv(core.CustomHostVariable)
 		})
+
+		It("handles cookies okay", func() {
+			basicRequest := getProxyRequestV2("orders", "GET")
+			basicRequest.Cookies = []string{
+				"TestCookie=123",
+			}
+			accessor := core.RequestAccessorV2{}
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), basicRequest)
+			Expect(err).To(BeNil())
+			Expect(httpReq.Cookie("TestCookie")).To(gstruct.PointTo(gstruct.MatchFields(gstruct.IgnoreExtras, gstruct.Fields{
+				"Value": Equal("123"),
+			})))
+		})
 	})
 })
 
