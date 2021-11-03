@@ -47,7 +47,7 @@ func (g *GinLambda) ProxyWithContext(ctx context.Context, req events.APIGatewayP
 func (g *GinLambda) proxyInternal(req *http.Request, err error) (events.APIGatewayProxyResponse, error) {
 
 	if err != nil {
-		return core.GatewayTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
+		return core.InternalServerError(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
 	respWriter := core.NewProxyResponseWriter()
@@ -55,7 +55,7 @@ func (g *GinLambda) proxyInternal(req *http.Request, err error) (events.APIGatew
 
 	proxyResponse, err := respWriter.GetProxyResponse()
 	if err != nil {
-		return core.GatewayTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
+		return core.InternalServerError(), core.NewLoggedError("Error while generating proxy response: %v", err)
 	}
 
 	return proxyResponse, nil
