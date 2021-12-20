@@ -1,20 +1,50 @@
-## AWS Lambda Go Api Proxy [![Build Status](https://travis-ci.org/awslabs/aws-lambda-go-api-proxy.svg?branch=master)](https://travis-ci.org/awslabs/aws-lambda-go-api-proxy)
-aws-lambda-go-api-proxy makes it easy to run Golang APIs written with frameworks such as [Gin](https://github.com/gin-gonic/gin) with AWS Lambda and Amazon API Gateway.
+## AWS Lambda Go API Proxy [![Build Status](https://travis-ci.org/awslabs/aws-lambda-go-api-proxy.svg?branch=master)](https://travis-ci.org/awslabs/aws-lambda-go-api-proxy)
+aws-lambda-go-api-proxy makes it easy to run Go APIs written with frameworks such as [Gin](https://github.com/gin-gonic/gin) with AWS Lambda and Amazon API Gateway.
 
 ## Getting started
-The first step is to install the required dependencies
+
+Install required dependencies.
 
 ```bash
-# First, we install the Lambda go libraries
+# First, install the Lambda go libraries.
 $ go get github.com/aws/aws-lambda-go/events
 $ go get github.com/aws/aws-lambda-go/lambda
 
-# Next, we install the core library
+# Next, install the core library.
 $ go get github.com/awslabs/aws-lambda-go-api-proxy/...
 ```
 
-Following the instructions from the [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/go-programming-model-handler-types.html), we need to declare a `Handler` method for our main package. We will declare a `ginadapter.GinLambda` object
-in the global scope, initialized once it in the Handler with all its API methods, and then use the `Proxy` method to translate requests and responses
+### Standard library
+
+To use with the standard library, the `httpadaptor.New` function takes in a `http.Handler`. The `ProxyWithContent` method on the `httpadapter.HandlerAdapter` can then be used as a Lambda handler.
+
+```go
+package main
+
+import (
+	"io"
+	"net/http"
+
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
+)
+
+func main() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "Hello")
+	})
+
+	lambda.Start(httpadapter.New(http.DefaultServeMux).ProxyWithContext)
+}
+```
+
+### Gin
+
+To use with the Gin framework, following the instructions from the [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/go-programming-model-handler-types.html), declare a `Handler` method for the main package.
+
+Declare a `ginadapter.GinLambda` object in the global scope, and initialize it in the `init` function, adding all API methods.
+
+The `ProxyWithContext` method is then used to translate requests and responses.
 
 ```go
 package main
