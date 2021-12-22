@@ -247,10 +247,10 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 		})
 
 		It("Populates stage variables correctly", func() {
-			varsRequest := getProxyRequest("orders", "GET")
+			varsRequest := getProxyRequestV2("orders", "GET")
 			varsRequest.StageVariables = getStageVariables()
 
-			accessor := core.RequestAccessor{}
+			accessor := core.RequestAccessorV2{}
 			httpReq, err := accessor.ProxyEventToHTTPRequest(varsRequest)
 			Expect(err).To(BeNil())
 
@@ -262,7 +262,7 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 			Expect("value1").To(Equal(stageVars["var1"]))
 			Expect("value2").To(Equal(stageVars["var2"]))
 
-			stageVars, ok := core.GetStageVarsFromContext(httpReq.Context())
+			stageVars, ok := core.GetStageVarsFromContextV2(httpReq.Context())
 			// not present in context
 			Expect(ok).To(BeFalse())
 
@@ -273,7 +273,7 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 			// should not be in headers
 			Expect(err).ToNot(BeNil())
 
-			stageVars, ok = core.GetStageVarsFromContext(httpReq.Context())
+			stageVars, ok = core.GetStageVarsFromContextV2(httpReq.Context())
 			Expect(ok).To(BeTrue())
 			Expect(2).To(Equal(len(stageVars)))
 			Expect(stageVars["var1"]).ToNot(BeNil())
@@ -284,9 +284,9 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 
 		It("Populates the default hostname correctly", func() {
 
-			basicRequest := getProxyRequest("orders", "GET")
-			basicRequest.RequestContext = getRequestContext()
-			accessor := core.RequestAccessor{}
+			basicRequest := getProxyRequestV2("orders", "GET")
+			basicRequest.RequestContext = getRequestContextV2()
+			accessor := core.RequestAccessorV2{}
 			httpReq, err := accessor.ProxyEventToHTTPRequest(basicRequest)
 			Expect(err).To(BeNil())
 
@@ -297,8 +297,8 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 		It("Uses a custom hostname", func() {
 			myCustomHost := "http://my-custom-host.com"
 			os.Setenv(core.CustomHostVariable, myCustomHost)
-			basicRequest := getProxyRequest("orders", "GET")
-			accessor := core.RequestAccessor{}
+			basicRequest := getProxyRequestV2("orders", "GET")
+			accessor := core.RequestAccessorV2{}
 			httpReq, err := accessor.EventToRequestWithContext(context.Background(), basicRequest)
 			Expect(err).To(BeNil())
 
@@ -310,8 +310,8 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 		It("Strips terminating / from hostname", func() {
 			myCustomHost := "http://my-custom-host.com"
 			os.Setenv(core.CustomHostVariable, myCustomHost+"/")
-			basicRequest := getProxyRequest("orders", "GET")
-			accessor := core.RequestAccessor{}
+			basicRequest := getProxyRequestV2("orders", "GET")
+			accessor := core.RequestAccessorV2{}
 			httpReq, err := accessor.EventToRequestWithContext(context.Background(), basicRequest)
 			Expect(err).To(BeNil())
 
