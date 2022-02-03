@@ -117,7 +117,6 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	for key, val := range r.Header {
 		for _, v := range val {
 			switch key {
-			// NOTI: fiber.HeaderTransferEncoding is no need to add case statements
 			case fiber.HeaderHost,
 				fiber.HeaderContentType,
 				fiber.HeaderUserAgent,
