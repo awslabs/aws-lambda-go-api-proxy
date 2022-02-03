@@ -10,10 +10,11 @@ import (
 	"net/http"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/utils"
 	"github.com/valyala/fasthttp"
+
+	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 )
 
 // FiberLambda makes it easy to send API Gateway proxy events to a fiber.App.
@@ -115,7 +116,17 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	req.SetHost(r.Host)
 	for key, val := range r.Header {
 		for _, v := range val {
-			req.Header.Add(key, v)
+			switch key {
+			// NOTI: fiber.HeaderTransferEncoding is no need to add case statements
+			case fiber.HeaderHost,
+				fiber.HeaderContentType,
+				fiber.HeaderUserAgent,
+				fiber.HeaderContentLength,
+				fiber.HeaderConnection:
+				req.Header.Set(key, v)
+			default:
+				req.Header.Add(key, v)
+			}
 		}
 	}
 
@@ -134,7 +145,7 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 
 	// Set response headers
 	fctx.Response.Header.VisitAll(func(k, v []byte) {
-		w.Header().Set(utils.UnsafeString(k), utils.UnsafeString(v))
+		w.Header().Add(utils.UnsafeString(k), utils.UnsafeString(v))
 	})
 
 	// Set response statuscode
