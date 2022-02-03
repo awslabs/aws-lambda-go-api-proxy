@@ -39,8 +39,8 @@ var _ = Describe("FiberLambda tests", func() {
 		})
 	})
 
-	Context("request header", func() {
-		It("check pass canonical header to fiber", func() {
+	Context("Request header", func() {
+		It("Check pass canonical header to fiber", func() {
 			app := fiber.New()
 			app.Post("/canonical_header", func(c *fiber.Ctx) error {
 				Expect(c.Get(fiber.HeaderHost)).To(Equal("localhost"))
@@ -85,7 +85,7 @@ var _ = Describe("FiberLambda tests", func() {
 			Expect(resp.Body).To(Equal(""))
 		})
 
-		It("check pass non canonical header to fiber", func() {
+		It("Check pass non canonical header to fiber", func() {
 			app := fiber.New()
 			app.Post("/header", func(c *fiber.Ctx) error {
 				Expect(c.Get(fiber.HeaderReferer)).To(Equal("https://github.com/gofiber/fiber"))
@@ -121,8 +121,8 @@ var _ = Describe("FiberLambda tests", func() {
 		})
 	})
 
-	Context("response header", func() {
-		It("check pass canonical header to fiber", func() {
+	Context("Response header", func() {
+		It("Check pass canonical header to fiber", func() {
 			app := fiber.New()
 			app.Post("/canonical_header", func(c *fiber.Ctx) error {
 				c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
@@ -169,7 +169,7 @@ var _ = Describe("FiberLambda tests", func() {
 			Expect(resp.MultiValueHeaders[fiber.HeaderConnection]).To(Equal([]string{"keep-alive"}))
 			Expect(resp.Body).To(Equal(""))
 		})
-		It("check pass non canonical header to fiber", func() {
+		It("Check pass non canonical header to fiber", func() {
 			app := fiber.New()
 			app.Post("/header", func(c *fiber.Ctx) error {
 				c.Links("http://api.example.com/users?page=2", "next", "http://api.example.com/users?page=5", "last")
@@ -193,8 +193,8 @@ var _ = Describe("FiberLambda tests", func() {
 		})
 	})
 
-	Context("next pattern", func() {
-		It("request header", func() {
+	Context("Next method", func() {
+		It("Check missing values in request header", func() {
 			app := fiber.New()
 			app.Post("/next", func(c *fiber.Ctx) error {
 				c.Next()
@@ -239,7 +239,7 @@ var _ = Describe("FiberLambda tests", func() {
 			Expect(resp.Body).To(Equal(""))
 		})
 
-		It("response header", func() {
+		It("Check missing values in response header", func() {
 			app := fiber.New()
 			app.Post("/next", func(c *fiber.Ctx) error {
 				c.Set(fiber.HeaderContentType, fiber.MIMEApplicationJSONCharsetUTF8)
