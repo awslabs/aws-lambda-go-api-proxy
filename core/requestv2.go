@@ -164,6 +164,10 @@ func (r *RequestAccessorV2) EventToRequest(req events.APIGatewayV2HTTPRequest) (
 		return nil, err
 	}
 
+	for _, cookie := range req.Cookies {
+		httpRequest.Header.Add("Cookie", cookie)
+	}
+
 	for headerKey, headerValue := range req.Headers {
 		for _, val := range strings.Split(headerValue, ",") {
 			httpRequest.Header.Add(headerKey, strings.Trim(val, " "))
