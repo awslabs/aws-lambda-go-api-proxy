@@ -159,14 +159,26 @@ var _ = Describe("ResponseWriterV2 tests", func() {
 
 		It("Writes multi-value headers correctly", func() {
 			response := NewProxyResponseWriterV2()
+			response.Header().Add("Accepts", "foobar")
+			response.Header().Add("Accepts", "barfoo")
+			response.Write([]byte("hello"))
+			proxyResponse, err := response.GetProxyResponse()
+			Expect(err).To(BeNil())
+
+			Expect(2).To(Equal(len(proxyResponse.Headers)))
+			Expect("foobar,barfoo").To(Equal(proxyResponse.Headers["Accepts"]))
+		})
+
+		It("Writes cookies correctly", func() {
+			response := NewProxyResponseWriterV2()
 			response.Header().Add("Set-Cookie", "csrftoken=foobar")
 			response.Header().Add("Set-Cookie", "session_id=barfoo")
 			response.Write([]byte("hello"))
 			proxyResponse, err := response.GetProxyResponse()
 			Expect(err).To(BeNil())
 
-			Expect(2).To(Equal(len(proxyResponse.Headers)))
-			Expect("csrftoken=foobar,session_id=barfoo").To(Equal(proxyResponse.Headers["Set-Cookie"]))
+			Expect(2).To(Equal(len(proxyResponse.Cookies)))
+			Expect(strings.Split("csrftoken=foobar,session_id=barfoo", ",")).To(Equal(proxyResponse.Cookies))
 		})
 	})
 
