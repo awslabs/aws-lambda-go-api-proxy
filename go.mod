@@ -6,7 +6,7 @@ require (
 	github.com/ajg/form v1.5.1 // indirect
 	github.com/aws/aws-lambda-go v1.19.1
 	github.com/fasthttp-contrib/websocket v0.0.0-20160511215533-1f3b11f56072 // indirect
-	github.com/gin-gonic/gin v1.7.2
+	github.com/gin-gonic/gin v1.7.7
 	github.com/go-chi/chi/v5 v5.0.2
 	github.com/gofiber/fiber/v2 v2.1.0
 	github.com/google/go-querystring v1.0.0 // indirect
