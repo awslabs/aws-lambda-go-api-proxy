@@ -1,20 +1,50 @@
-## AWS Lambda Go Api Proxy [![Build Status](https://travis-ci.org/awslabs/aws-lambda-go-api-proxy.svg?branch=master)](https://travis-ci.org/awslabs/aws-lambda-go-api-proxy)
-aws-lambda-go-api-proxy makes it easy to run Golang APIs written with frameworks such as [Gin](https://github.com/gin-gonic/gin) with AWS Lambda and Amazon API Gateway.
+## AWS Lambda Go API Proxy [![Build Status](https://travis-ci.org/awslabs/aws-lambda-go-api-proxy.svg?branch=master)](https://travis-ci.org/awslabs/aws-lambda-go-api-proxy)
+aws-lambda-go-api-proxy makes it easy to run Go APIs written with frameworks such as [Gin](https://github.com/gin-gonic/gin) with AWS Lambda and Amazon API Gateway.
 
 ## Getting started
-The first step is to install the required dependencies
+
+Install required dependencies.
 
 ```bash
-# First, we install the Lambda go libraries
+# First, install the Lambda go libraries.
 $ go get github.com/aws/aws-lambda-go/events
 $ go get github.com/aws/aws-lambda-go/lambda
 
-# Next, we install the core library
+# Next, install the core library.
 $ go get github.com/awslabs/aws-lambda-go-api-proxy/...
 ```
 
-Following the instructions from the [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/go-programming-model-handler-types.html), we need to declare a `Handler` method for our main package. We will declare a `ginadapter.GinLambda` object
-in the global scope, initialized once it in the Handler with all its API methods, and then use the `Proxy` method to translate requests and responses
+### Standard library
+
+To use with the standard library, the `httpadaptor.New` function takes in a `http.Handler`. The `ProxyWithContent` method on the `httpadapter.HandlerAdapter` can then be used as a Lambda handler.
+
+```go
+package main
+
+import (
+	"io"
+	"net/http"
+
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/awslabs/aws-lambda-go-api-proxy/httpadapter"
+)
+
+func main() {
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		io.WriteString(w, "Hello")
+	})
+
+	lambda.Start(httpadapter.New(http.DefaultServeMux).ProxyWithContext)
+}
+```
+
+### Gin
+
+To use with the Gin framework, following the instructions from the [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/go-programming-model-handler-types.html), declare a `Handler` method for the main package.
+
+Declare a `ginadapter.GinLambda` object in the global scope, and initialize it in the `init` function, adding all API methods.
+
+The `ProxyWithContext` method is then used to translate requests and responses.
 
 ```go
 package main
@@ -78,17 +108,22 @@ $ aws cloudformation deploy --template-file output-sam.yaml --stack-name YOUR_ST
 Using the CloudFormation console, you can find the URL for the newly created API endpoint in the `Outputs` tab of the sample stack - it looks sample like this: `https://xxxxxxxxx.execute-api.xx-xxxx-x.amazonaws.com/Prod/pets`. Open a browser window and try to call the URL.
 
 ## API Gateway context and stage variables
-The `RequestAccessor` object, and therefore `GinLambda`, automatically marshals the API Gateway request context and stage variables objects and stores them in custom headers in the request: `X-GinLambda-ApiGw-Context` and `X-GinLambda-ApiGw-StageVars`. While you could manually unmarshal the json content into the `events.APIGatewayProxyRequestContext` and `map[string]string` objects, the library exports two utility methods to give you easy access to the data.
+~~The `RequestAccessor` object, and therefore `GinLambda`, automatically marshals the API Gateway request context and stage variables objects and stores them in custom headers in the request: `X-GinLambda-ApiGw-Context` and `X-GinLambda-ApiGw-StageVars`. While you could manually unmarshal the json content into the `events.APIGatewayProxyRequestContext` and `map[string]string` objects, the library exports two utility methods to give you easy access to the data.~~
+
+The gateway context, stage variables and lambda runtime variables are automatically populate to the context.
 
 ```go
 // the methods are available in your instance of the GinLambda
-// object and receive the http.Request object
-apiGwContext := ginLambda.GetAPIGatewayContext(c.Request)
-apiGwStageVars := ginLambda.GetAPIGatewayStageVars(c.Request)
+// object and receive the context
+apiGwContext := ginLambda.GetAPIGatewayContextFromContext(ctx)
+apiGwStageVars := ginLambda.GetStageVarsFromContext(ctx)
+runtimeContext := ginLambda.GetRuntimeContextFromContext(ctx)
 
 // you can access the properties of the context directly
 log.Println(apiGwContext.RequestID)
 log.Println(apiGwContext.Stage)
+log.Println(runtimeContext.InvokedFunctionArn)
+
 
 // stage variables are stored in a map[string]string
 stageVarValue := apiGwStageVars["MyStageVar"]

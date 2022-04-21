@@ -213,13 +213,13 @@ func addToHeader(req *http.Request, apiGwRequest events.APIGatewayProxyRequest) 
 		log.Println("Could not marshal stage variables for custom header")
 		return nil, err
 	}
-	req.Header.Add(APIGwStageVarsHeader, string(stageVars))
+	req.Header.Set(APIGwStageVarsHeader, string(stageVars))
 	apiGwContext, err := json.Marshal(apiGwRequest.RequestContext)
 	if err != nil {
 		log.Println("Could not Marshal API GW context for custom header")
 		return req, err
 	}
-	req.Header.Add(APIGwContextHeader, string(apiGwContext))
+	req.Header.Set(APIGwContextHeader, string(apiGwContext))
 	return req, nil
 }
 

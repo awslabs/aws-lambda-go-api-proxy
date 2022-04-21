@@ -35,3 +35,32 @@ var _ = Describe("EchoLambda tests", func() {
 		})
 	})
 })
+
+var _ = Describe("EchoLambdaV2 tests", func() {
+	Context("Simple ping request", func() {
+		It("Proxies the event correctly", func() {
+			log.Println("Starting test")
+			e := echo.New()
+			e.GET("/ping", func(c echo.Context) error {
+				log.Println("Handler!!")
+				return c.String(200, "pong")
+			})
+
+			adapter := echoadapter.NewV2(e)
+
+			req := events.APIGatewayV2HTTPRequest{
+				RequestContext: events.APIGatewayV2HTTPRequestContext{
+					HTTP: events.APIGatewayV2HTTPRequestContextHTTPDescription{
+						Method: "GET",
+						Path:   "/ping",
+					},
+				},
+			}
+
+			resp, err := adapter.Proxy(req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+		})
+	})
+})

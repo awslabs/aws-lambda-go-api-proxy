@@ -1,5 +1,5 @@
 // Package ginadapter adds Gin support for the aws-severless-go-api library.
-// Uses the core package behind the scenes and exposes the New method to
+// Uses the core package behind the scenes and exposes the New and NewV2 methods to
 // get a new instance and Proxy method to send request to the Gin engine.
 package ginadapter
 
