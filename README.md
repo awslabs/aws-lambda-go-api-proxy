@@ -108,17 +108,22 @@ $ aws cloudformation deploy --template-file output-sam.yaml --stack-name YOUR_ST
 Using the CloudFormation console, you can find the URL for the newly created API endpoint in the `Outputs` tab of the sample stack - it looks sample like this: `https://xxxxxxxxx.execute-api.xx-xxxx-x.amazonaws.com/Prod/pets`. Open a browser window and try to call the URL.
 
 ## API Gateway context and stage variables
-The `RequestAccessor` object, and therefore `GinLambda`, automatically marshals the API Gateway request context and stage variables objects and stores them in custom headers in the request: `X-GinLambda-ApiGw-Context` and `X-GinLambda-ApiGw-StageVars`. While you could manually unmarshal the json content into the `events.APIGatewayProxyRequestContext` and `map[string]string` objects, the library exports two utility methods to give you easy access to the data.
+~~The `RequestAccessor` object, and therefore `GinLambda`, automatically marshals the API Gateway request context and stage variables objects and stores them in custom headers in the request: `X-GinLambda-ApiGw-Context` and `X-GinLambda-ApiGw-StageVars`. While you could manually unmarshal the json content into the `events.APIGatewayProxyRequestContext` and `map[string]string` objects, the library exports two utility methods to give you easy access to the data.~~
+
+The gateway context, stage variables and lambda runtime variables are automatically populate to the context.
 
 ```go
 // the methods are available in your instance of the GinLambda
-// object and receive the http.Request object
-apiGwContext := ginLambda.GetAPIGatewayContext(c.Request)
-apiGwStageVars := ginLambda.GetAPIGatewayStageVars(c.Request)
+// object and receive the context
+apiGwContext := ginLambda.GetAPIGatewayContextFromContext(ctx)
+apiGwStageVars := ginLambda.GetStageVarsFromContext(ctx)
+runtimeContext := ginLambda.GetRuntimeContextFromContext(ctx)
 
 // you can access the properties of the context directly
 log.Println(apiGwContext.RequestID)
 log.Println(apiGwContext.Stage)
+log.Println(runtimeContext.InvokedFunctionArn)
+
 
 // stage variables are stored in a map[string]string
 stageVarValue := apiGwStageVars["MyStageVar"]
