@@ -11,7 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var runOnAwsLambda = false
+var runOnAwsLambda = true
 var fiberLambda *fiberadapter.FiberLambda
 var app *fiber.App
 
