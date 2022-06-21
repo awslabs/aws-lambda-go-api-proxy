@@ -30,3 +30,9 @@ require (
 	gopkg.in/ini.v1 v1.66.6 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace (
+	gopkg.in/yaml.v2 v2.2.2 => gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.2.3 => gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v2 v2.2.4 => gopkg.in/yaml.v2 v2.2.8
+)
