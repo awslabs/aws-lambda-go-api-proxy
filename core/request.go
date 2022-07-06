@@ -190,6 +190,8 @@ func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*ht
 		return nil, err
 	}
 
+	httpRequest.RemoteAddr = req.RequestContext.Identity.SourceIP
+
 	if req.MultiValueHeaders != nil {
 		for k, values := range req.MultiValueHeaders {
 			for _, value := range values {
