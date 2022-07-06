@@ -123,7 +123,7 @@ func (r *RequestAccessorV2) EventToRequest(req events.APIGatewayV2HTTPRequest) (
 
 	path := req.RawPath
 
-	//if RawPath empty is, populate from request context
+	// if RawPath empty is, populate from request context
 	if len(path) == 0 {
 		path = req.RequestContext.HTTP.Path
 	}
@@ -157,6 +157,8 @@ func (r *RequestAccessorV2) EventToRequest(req events.APIGatewayV2HTTPRequest) (
 		path,
 		bytes.NewReader(decodedBody),
 	)
+
+	httpRequest.RemoteAddr = req.RequestContext.HTTP.SourceIP
 
 	if err != nil {
 		fmt.Printf("Could not convert request %s:%s to http.Request\n", req.RequestContext.HTTP.Method, req.RequestContext.HTTP.Path)
