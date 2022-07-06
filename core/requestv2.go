@@ -158,13 +158,13 @@ func (r *RequestAccessorV2) EventToRequest(req events.APIGatewayV2HTTPRequest) (
 		bytes.NewReader(decodedBody),
 	)
 
-	httpRequest.RemoteAddr = req.RequestContext.HTTP.SourceIP
-
 	if err != nil {
 		fmt.Printf("Could not convert request %s:%s to http.Request\n", req.RequestContext.HTTP.Method, req.RequestContext.HTTP.Path)
 		log.Println(err)
 		return nil, err
 	}
+
+	httpRequest.RemoteAddr = req.RequestContext.HTTP.SourceIP
 
 	for _, cookie := range req.Cookies {
 		httpRequest.Header.Add("Cookie", cookie)
