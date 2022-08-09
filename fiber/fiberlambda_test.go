@@ -54,7 +54,6 @@ var _ = Describe("FiberLambda tests", func() {
 				Expect(c.Get(fiber.HeaderContentLength)).To(Equal("77"))
 				Expect(c.Get(fiber.HeaderConnection)).To(Equal("Keep-Alive"))
 				Expect(c.Get(fiber.HeaderKeepAlive)).To(Equal("timeout=5, max=1000"))
-				Expect(c.Get(fiber.HeaderTransferEncoding)).To(Equal(""))
 
 				return c.Status(fiber.StatusNoContent).Send(nil)
 			})
@@ -71,10 +70,9 @@ var _ = Describe("FiberLambda tests", func() {
 
 					"cookie": {"a=b", "b=c;c=d"},
 
-					fiber.HeaderContentLength:    {"77"},
-					fiber.HeaderConnection:       {"Keep-Alive"},
-					fiber.HeaderKeepAlive:        {"timeout=5, max=1000"},
-					fiber.HeaderTransferEncoding: {"gzip"},
+					fiber.HeaderContentLength: {"77"},
+					fiber.HeaderConnection:    {"Keep-Alive"},
+					fiber.HeaderKeepAlive:     {"timeout=5, max=1000"},
 				},
 			}
 
@@ -209,7 +207,6 @@ var _ = Describe("FiberLambda tests", func() {
 				Expect(c.Get(fiber.HeaderContentLength)).To(Equal("77"))
 				Expect(c.Get(fiber.HeaderConnection)).To(Equal("Keep-Alive"))
 				Expect(c.Get(fiber.HeaderKeepAlive)).To(Equal("timeout=5, max=1000"))
-				Expect(c.Get(fiber.HeaderTransferEncoding)).To(Equal(""))
 
 				return c.Status(fiber.StatusNoContent).Send(nil)
 			})
@@ -225,10 +222,9 @@ var _ = Describe("FiberLambda tests", func() {
 
 					"cookie": {"a=b", "b=c;c=d"},
 
-					fiber.HeaderContentLength:    {"77"},
-					fiber.HeaderConnection:       {"Keep-Alive"},
-					fiber.HeaderKeepAlive:        {"timeout=5, max=1000"},
-					fiber.HeaderTransferEncoding: {"gzip"},
+					fiber.HeaderContentLength: {"77"},
+					fiber.HeaderConnection:    {"Keep-Alive"},
+					fiber.HeaderKeepAlive:     {"timeout=5, max=1000"},
 				},
 			}
 
