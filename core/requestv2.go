@@ -123,7 +123,7 @@ func (r *RequestAccessorV2) EventToRequest(req events.APIGatewayV2HTTPRequest) (
 
 	path := req.RawPath
 
-	//if RawPath empty is, populate from request context
+	// if RawPath empty is, populate from request context
 	if len(path) == 0 {
 		path = req.RequestContext.HTTP.Path
 	}
@@ -163,6 +163,8 @@ func (r *RequestAccessorV2) EventToRequest(req events.APIGatewayV2HTTPRequest) (
 		log.Println(err)
 		return nil, err
 	}
+
+	httpRequest.RemoteAddr = req.RequestContext.HTTP.SourceIP
 
 	for _, cookie := range req.Cookies {
 		httpRequest.Header.Add("Cookie", cookie)
