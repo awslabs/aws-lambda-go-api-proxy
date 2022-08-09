@@ -84,6 +84,55 @@ func main() {
 }
 ```
 
+### Fiber
+
+To use with the Fiber framework, following the instructions from the [Lambda documentation](https://docs.aws.amazon.com/lambda/latest/dg/go-programming-model-handler-types.html), declare a `Handler` method for the main package.
+
+Declare a `fiberadapter.FiberLambda` object in the global scope, and initialize it in the `init` function, adding all API methods.
+
+The `ProxyWithContext` method is then used to translate requests and responses.
+
+```go
+// main.go
+package main
+
+import (
+	"context"
+	"log"
+
+	"github.com/aws/aws-lambda-go/events"
+	"github.com/aws/aws-lambda-go/lambda"
+	fiberadapter "github.com/awslabs/aws-lambda-go-api-proxy/fiber"
+	"github.com/gofiber/fiber/v2"
+)
+
+var fiberLambda *fiberadapter.FiberLambda
+
+// init the Fiber Server
+func init() {
+	log.Printf("Fiber cold start")
+	var app *fiber.App
+	app = fiber.New()
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		return c.SendString("Hello, World!")
+	})
+
+	fiberLambda = fiberadapter.New(app)
+}
+
+// Handler will deal with Fiber working with Lambda
+func Handler(ctx context.Context, req events.APIGatewayProxyRequest) (events.APIGatewayProxyResponse, error) {
+	// If no name is provided in the HTTP request body, throw an error
+	return fiberLambda.ProxyWithContext(ctx, req)
+}
+
+func main() {
+	// Make the handler available for Remote Procedure Call by AWS Lambda
+	lambda.Start(Handler)
+}
+```
+
 ## Other frameworks
 This package also supports [Negroni](https://github.com/urfave/negroni), [GorillaMux](https://github.com/gorilla/mux), and plain old `HandlerFunc` - take a look at the code in their respective sub-directories. All packages implement the `Proxy` method exactly like our Gin sample above.
 
