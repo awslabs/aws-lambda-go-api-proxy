@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/aws/aws-lambda-go v1.34.1
-	github.com/awslabs/aws-lambda-go-api-proxy v0.13.3
+	github.com/ikegam1/aws-lambda-go-api-proxy issue-144
 	github.com/gin-gonic/gin v1.8.1
 	github.com/go-chi/chi/v5 v5.0.7
 	github.com/gofiber/fiber/v2 v2.37.1
