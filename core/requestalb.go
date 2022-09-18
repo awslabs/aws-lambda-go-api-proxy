@@ -129,7 +129,6 @@ func (r *RequestAccessorALB) EventToRequest(req events.ALBTargetGroupRequest) (*
 }
 
 func addToHeaderALB(req *http.Request, albTgRequest events.ALBTargetGroupRequest) (*http.Request, error) {
-	//req.Header.Add(ALBTgContextHeader, albTgRequest.RequestContext.ELB.TargetGroupArn)
 	albTgContext, err := json.Marshal(albTgRequest.RequestContext)
 	if err != nil {
 		log.Println("Could not Marshal ALB Tg context for custom header")
@@ -146,7 +145,6 @@ func addToContextALB(ctx context.Context, req *http.Request, albTgRequest events
 	return req.WithContext(ctx)
 }
 
-// GetRuntimeContextFromContextALB retrieve Lambda Runtime Context from context.Context
 func GetRuntimeContextFromContextALB(ctx context.Context) (*lambdacontext.LambdaContext, bool) {
 	v, ok := ctx.Value(ctxKey{}).(requestContextALB)
 	return v.lambdaContext, ok
