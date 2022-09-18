@@ -25,7 +25,7 @@ const (
 	ALBTgContextHeader = "X-Golambdaproxy-Albtargetgroup-Context"
 )
 
-// RequestAccessorALB objects give access to custom API Gateway properties
+// RequestAccessorALB objects give access to custom ALB Target Group properties
 // in the request.
 type RequestAccessorALB struct{}
 

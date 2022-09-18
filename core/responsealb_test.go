@@ -96,7 +96,7 @@ var _ = Describe("ResponseWriter tests", func() {
 		})
 	})
 
-	Context("Export API Gateway proxy response", func() {
+	Context("Export ALB Target Group proxy response", func() {
 		emtpyResponse := NewProxyResponseWriter()
 		emtpyResponse.Header().Add("Content-Type", "application/json")
 

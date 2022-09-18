@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// EchoLambdaV2 makes it easy to send API Gateway proxy V2 events to a echo.Echo.
+// EchoLambdaALB makes it easy to send ALB Target Group events to a echo.Echo.
 // The library transforms the proxy event into an HTTP request and then
 // creates a proxy response object from the http.ResponseWriter
 type EchoLambdaALB struct {
@@ -18,14 +18,14 @@ type EchoLambdaALB struct {
 	Echo *echo.Echo
 }
 
-// NewV2 creates a new instance of the EchoLambda object.
+// NewALB creates a new instance of the EchoLambda object.
 // Receives an initialized *echo.Echo object - normally created with echo.New().
-// It returns the initialized instance of the EchoLambdaV2 object.
+// It returns the initialized instance of the EchoLambdaALB object.
 func NewALB(e *echo.Echo) *EchoLambdaALB {
 	return &EchoLambdaALB{Echo: e}
 }
 
-// Proxy receives an API Gateway proxy V2 event, transforms it into an http.Request
+// Proxy receives an ALB Target Group event, transforms it into an http.Request
 // object, and sends it to the echo.Echo for routing.
 // It returns a proxy response object generated from the http.ResponseWriter.
 func (e *EchoLambdaALB) Proxy(req events.ALBTargetGroupRequest) (events.ALBTargetGroupResponse, error) {
@@ -33,7 +33,7 @@ func (e *EchoLambdaALB) Proxy(req events.ALBTargetGroupRequest) (events.ALBTarge
 	return e.proxyInternal(echoRequest, err)
 }
 
-// ProxyWithContext receives context and an API Gateway proxy V2 event,
+// ProxyWithContext receives context and an ALB Target Group event,
 // transforms them into an http.Request object, and sends it to the echo.Echo for routing.
 // It returns a proxy response object generated from the http.ResponseWriter.
 func (e *EchoLambdaALB) ProxyWithContext(ctx context.Context, req events.ALBTargetGroupRequest) (events.ALBTargetGroupResponse, error) {
