@@ -15,7 +15,7 @@ require (
 	github.com/kataras/iris/v12 v12.2.0-alpha9
 	github.com/kataras/tunnel v0.0.4 // indirect
 	github.com/klauspost/compress v1.15.6 // indirect
-	github.com/labstack/echo/v4 v4.1.17
+	github.com/labstack/echo/v4 v4.9.0
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.18.1
