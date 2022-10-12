@@ -114,12 +114,19 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	req.Header.SetMethod(r.Method)
 	req.SetRequestURI(r.RequestURI)
 	req.SetHost(r.Host)
+	userAgent := ""
 	for key, val := range r.Header {
 		for _, v := range val {
 			switch key {
+			case fiber.HeaderUserAgent:
+				if userAgent != "" {
+					userAgent += ", " + v
+				} else {
+					userAgent = v
+				}
+				req.Header.Set(key, userAgent)
 			case fiber.HeaderHost,
 				fiber.HeaderContentType,
-				fiber.HeaderUserAgent,
 				fiber.HeaderContentLength,
 				fiber.HeaderConnection:
 				req.Header.Set(key, v)
