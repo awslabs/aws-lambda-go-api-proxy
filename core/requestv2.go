@@ -36,7 +36,7 @@ func (r *RequestAccessorV2) GetAPIGatewayContextV2(req *http.Request) (events.AP
 	context := events.APIGatewayV2HTTPRequestContext{}
 	err := json.Unmarshal([]byte(req.Header.Get(APIGwContextHeader)), &context)
 	if err != nil {
-		log.Println("Erorr while unmarshalling context")
+		log.Println("Error while unmarshalling context")
 		log.Println(err)
 		return events.APIGatewayV2HTTPRequestContext{}, err
 	}
