@@ -54,7 +54,7 @@ func (r *RequestAccessorV2) GetAPIGatewayStageVars(req *http.Request) (map[strin
 	}
 	err := json.Unmarshal([]byte(req.Header.Get(APIGwStageVarsHeader)), &stageVars)
 	if err != nil {
-		log.Println("Erorr while unmarshalling stage variables")
+		log.Println("Error while unmarshalling stage variables")
 		log.Println(err)
 		return stageVars, err
 	}
