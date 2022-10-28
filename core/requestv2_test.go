@@ -173,7 +173,7 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 			// calling old method to verify reverse compatibility
 			httpReq, err := accessor.ProxyEventToHTTPRequest(contextRequest)
 			Expect(err).To(BeNil())
-			Expect(2).To(Equal(len(httpReq.Header)))
+			Expect(3).To(Equal(len(httpReq.Header)))
 			Expect(httpReq.Header.Get(core.APIGwContextHeader)).ToNot(BeNil())
 		})
 	})
@@ -281,6 +281,42 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 			Expect(stageVars["var2"]).ToNot(BeNil())
 			Expect("value1").To(Equal(stageVars["var1"]))
 			Expect("value2").To(Equal(stageVars["var2"]))
+		})
+
+		It("Populates path parameters correctly", func() {
+			varsRequest := getProxyRequestV2("orders", "GET")
+			varsRequest.PathParameters = getPathParameters()
+
+			accessor := core.RequestAccessorV2{}
+			httpReq, err := accessor.ProxyEventToHTTPRequest(varsRequest)
+			Expect(err).To(BeNil())
+
+			stageVars, err := accessor.GetAPIGatewayPathParams(httpReq)
+			Expect(err).To(BeNil())
+			Expect(2).To(Equal(len(stageVars)))
+			Expect(stageVars["param1"]).ToNot(BeNil())
+			Expect(stageVars["param2"]).ToNot(BeNil())
+			Expect("value1").To(Equal(stageVars["param1"]))
+			Expect("value2").To(Equal(stageVars["param2"]))
+
+			pathParams, ok := core.GetPathParamsFromContextV2(httpReq.Context())
+			// not present in context
+			Expect(ok).To(BeFalse())
+
+			httpReq, err = accessor.EventToRequestWithContext(context.Background(), varsRequest)
+			Expect(err).To(BeNil())
+
+			pathParams, err = accessor.GetAPIGatewayPathParams(httpReq)
+			// should not be in headers
+			Expect(err).ToNot(BeNil())
+
+			pathParams, ok = core.GetPathParamsFromContextV2(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect(2).To(Equal(len(stageVars)))
+			Expect(pathParams["param1"]).ToNot(BeNil())
+			Expect(pathParams["param2"]).ToNot(BeNil())
+			Expect("value1").To(Equal(pathParams["param1"]))
+			Expect("value2").To(Equal(pathParams["param2"]))
 		})
 
 		It("Populates the default hostname correctly", func() {
