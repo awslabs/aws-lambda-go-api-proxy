@@ -82,6 +82,13 @@ func (r *ProxyResponseWriter) WriteHeader(status int) {
 	r.status = status
 }
 
+
+// Flush implements the Flusher interface which is called by 
+// some implementers. This is intentionally a no-op
+func (r *ProxyResponseWriter) Flush() {
+	//no-op
+}
+
 // GetProxyResponse converts the data passed to the response writer into
 // an events.APIGatewayProxyResponse object.
 // Returns a populated proxy response object. If the response is invalid, for example
