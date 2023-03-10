@@ -1,4 +1,4 @@
-module github.com/awslabs/aws-lambda-go-api-proxy
+module github.com/sportlane/aws-lambda-go-api-proxy
 
 go 1.14
 
