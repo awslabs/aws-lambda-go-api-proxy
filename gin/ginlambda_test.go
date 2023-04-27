@@ -79,3 +79,37 @@ var _ = Describe("GinLambdaV2 tests", func() {
 		})
 	})
 })
+
+var _ = Describe("GinLambdaALB tests", func() {
+	Context("Simple ping request", func() {
+		It("Proxies the event correctly", func() {
+			log.Println("Starting test")
+			r := gin.Default()
+			r.GET("/ping", func(c *gin.Context) {
+				log.Println("Handler!!")
+				c.JSON(200, gin.H{
+					"message": "pong",
+				})
+			})
+
+			adapter := ginadapter.NewALB(r)
+
+			req := events.ALBTargetGroupRequest{
+				HTTPMethod: "GET",
+				Path:       "/ping",
+				RequestContext: events.ALBTargetGroupRequestContext{
+					ELB: events.ELBContext{TargetGroupArn: " ad"},
+				}}
+
+			resp, err := adapter.Proxy(req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+
+			resp, err = adapter.Proxy(req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+		})
+	})
+})
