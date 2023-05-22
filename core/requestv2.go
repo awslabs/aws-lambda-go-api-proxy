@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/textproto"
 	"net/url"
 	"os"
 	"strings"
@@ -170,7 +171,13 @@ func (r *RequestAccessorV2) EventToRequest(req events.APIGatewayV2HTTPRequest) (
 		httpRequest.Header.Add("Cookie", cookie)
 	}
 
-	for headerKey, headerValue := range req.Headers {
+	singletonHeaders, headers := splitSingletonHeaders(req.Headers)
+
+	for headerKey, headerValue := range singletonHeaders {
+		httpRequest.Header.Add(headerKey, headerValue)
+	}
+
+	for headerKey, headerValue := range headers {
 		for _, val := range strings.Split(headerValue, ",") {
 			httpRequest.Header.Add(headerKey, strings.Trim(val, " "))
 		}
@@ -226,4 +233,39 @@ type requestContextV2 struct {
 	lambdaContext       *lambdacontext.LambdaContext
 	gatewayProxyContext events.APIGatewayV2HTTPRequestContext
 	stageVars           map[string]string
+}
+
+// splitSingletonHeaders splits the headers into single-value headers and other,
+// multi-value capable, headers.
+// Returns (single-value headers, multi-value-capable headers)
+func splitSingletonHeaders(headers map[string]string) (map[string]string, map[string]string) {
+	singletons := make(map[string]string)
+	multitons := make(map[string]string)
+	for headerKey, headerValue := range headers {
+		if ok := singletonHeaders[textproto.CanonicalMIMEHeaderKey(headerKey)]; ok {
+			singletons[headerKey] = headerValue
+		} else {
+			multitons[headerKey] = headerValue
+		}
+	}
+
+	return singletons, multitons
+}
+
+// singletonHeaders is a set of headers, that only accept a single
+// value which may be comma separated (according to RFC 7230)
+var singletonHeaders = map[string]bool{
+	"Content-Type":        true,
+	"Content-Disposition": true,
+	"Content-Length":      true,
+	"User-Agent":          true,
+	"Referer":             true,
+	"Host":                true,
+	"Authorization":       true,
+	"Proxy-Authorization": true,
+	"If-Modified-Since":   true,
+	"If-Unmodified-Since": true,
+	"From":                true,
+	"Location":            true,
+	"Max-Forwards":        true,
 }

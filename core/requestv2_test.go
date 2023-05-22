@@ -136,6 +136,35 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 			}
 		})
 
+		singletonHeaderRequest := getProxyRequestV2("/hello", "GET")
+		singletonHeaderRequest.Headers = map[string]string{
+			// multi-value capable headers
+			"hello": "1",
+			"world": "2,3",
+			// singleton headers, which may be comma separated
+			"user-agent":    "Mozilla/5.0 (Linux; Android 11; Pixel 5 Build/RQ3A.210805.001.A1; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/92.0.4515.159 Mobile Safari/537.36",
+			"authorization": "some custom comma, separated authorization",
+		}
+
+		It("Populates singleton header values correctly", func() {
+			httpReq, err := accessor.EventToRequestWithContext(context.Background(), singletonHeaderRequest)
+			Expect(err).To(BeNil())
+			Expect("/hello").To(Equal(httpReq.URL.Path))
+			Expect("GET").To(Equal(httpReq.Method))
+
+			headers := httpReq.Header
+			Expect(4).To(Equal(len(headers)))
+
+			for k, value := range headers {
+				k = strings.ToLower(k)
+				if k == "hello" || k == "world" {
+					Expect(strings.Join(value, ",")).To(Equal(singletonHeaderRequest.Headers[k]))
+				} else {
+					Expect(headers.Get(k)).To(Equal(singletonHeaderRequest.Headers[k]))
+				}
+			}
+		})
+
 		svhRequest := getProxyRequestV2("/hello", "GET")
 		svhRequest.Headers = map[string]string{
 			"hello": "1",
