@@ -49,6 +49,10 @@ func (r *ProxyResponseWriterALB) notifyClosed() {
 	}
 }
 
+func (r *ProxyResponseWriterALB) Flush() {
+	r.notifyClosed()
+}
+
 // Header implementation from the http.ResponseWriter interface.
 func (r *ProxyResponseWriterALB) Header() http.Header {
 	return r.headers
