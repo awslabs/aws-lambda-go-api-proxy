@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/BurntSushi/toml v1.1.0 // indirect
-	github.com/aws/aws-lambda-go v1.19.1
+	github.com/aws/aws-lambda-go v1.41.0
 	github.com/aymerick/raymond v2.0.3-0.20180322193309-b565731e1464+incompatible // indirect
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-chi/chi/v5 v5.0.2
@@ -27,7 +27,6 @@ require (
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/ini.v1 v1.66.6 // indirect
-	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
 replace (
