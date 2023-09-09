@@ -1,10 +1,9 @@
-module github.com/dza89/aws-lambda-go-api-proxy
+module github.com/awslabs/aws-lambda-go-api-proxy
 
 go 1.20
 
 require (
 	github.com/aws/aws-lambda-go v1.41.0
-	github.com/awslabs/aws-lambda-go-api-proxy v0.14.0
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-chi/chi/v5 v5.0.2
 	github.com/gofiber/fiber/v2 v2.49.1

@@ -3,11 +3,13 @@ package core_test
 import (
 	"context"
 	"encoding/base64"
-	"github.com/onsi/gomega/gstruct"
+	"fmt"
 	"io/ioutil"
 	"math/rand"
 	"os"
 	"strings"
+
+	"github.com/onsi/gomega/gstruct"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambdacontext"
@@ -74,6 +76,8 @@ var _ = Describe("RequestAccessorV2 tests", func() {
 		It("Populates multiple value query string correctly", func() {
 			httpReq, err := accessor.EventToRequestWithContext(context.Background(), mqsRequest)
 			Expect(err).To(BeNil())
+			fmt.Println("SDY!@$#!@FSDKFJDL")
+			fmt.Printf("%v", httpReq.RequestURI)
 			Expect("/hello").To(Equal(httpReq.URL.Path))
 			Expect(httpReq.RequestURI).To(ContainSubstring("hello=1"))
 			Expect(httpReq.RequestURI).To(ContainSubstring("world=2"))

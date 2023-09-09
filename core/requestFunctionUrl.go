@@ -26,15 +26,15 @@ const (
 	FuContextHeader = "X-GoLambdaProxy-Fu-Context"
 )
 
-// RequestAccessorV2 objects give access to custom API Gateway properties
+// RequestAccessorFu objects give access to custom API Gateway properties
 // in the request.
 type RequestAccessorFu struct {
 	stripBasePath string
 }
 
-// GetAPIGatewayContextV2 extracts the API Gateway context object from a
+// GetFunctionUrlContext extracts the API Gateway context object from a
 // request's custom header.
-// Returns a populated events.APIGatewayProxyRequestContext object from
+// Returns a populated events.LambdaFunctionURLRequestContext object from
 // the request.
 func (r *RequestAccessorFu) GetFunctionUrlContext(req *http.Request) (events.LambdaFunctionURLRequestContext, error) {
 	if req.Header.Get(APIGwContextHeader) == "" {
@@ -74,9 +74,9 @@ func (r *RequestAccessorFu) StripBasePath(basePath string) string {
 	return newBasePath
 }
 
-// ProxyEventToHTTPRequest converts an API Gateway proxy event into a http.Request object.
-// Returns the populated http request with additional two custom headers for the stage variables and API Gateway context.
-// To access these properties use the GetAPIGatewayStageVars and GetAPIGatewayContext method of the RequestAccessor object.
+// ProxyEventToHTTPRequest converts an Function URL proxy event into a http.Request object.
+// Returns the populated http request with additional two custom headers for the stage variables and Function Url context.
+// To access these properties use GetFunctionUrlContext method of the RequestAccessor object.
 func (r *RequestAccessorFu) ProxyEventToHTTPRequest(req events.LambdaFunctionURLRequest) (*http.Request, error) {
 	httpRequest, err := r.EventToRequest(req)
 	if err != nil {
@@ -86,9 +86,9 @@ func (r *RequestAccessorFu) ProxyEventToHTTPRequest(req events.LambdaFunctionURL
 	return addToHeaderFu(httpRequest, req)
 }
 
-// EventToRequestWithContext converts an API Gateway proxy event and context into an http.Request object.
+// EventToRequestWithContext converts an Function URL proxy event and context into an http.Request object.
 // Returns the populated http request with lambda context, stage variables and APIGatewayProxyRequestContext as part of its context.
-// Access those using GetAPIGatewayContextFromContext, GetStageVarsFromContext and GetRuntimeContextFromContext functions in this package.
+// Access those using GetFunctionUrlContextFromContext and GetRuntimeContextFromContext functions in this package.
 func (r *RequestAccessorFu) EventToRequestWithContext(ctx context.Context, req events.LambdaFunctionURLRequest) (*http.Request, error) {
 	httpRequest, err := r.EventToRequest(req)
 	if err != nil {
@@ -98,7 +98,7 @@ func (r *RequestAccessorFu) EventToRequestWithContext(ctx context.Context, req e
 	return addToContextFu(ctx, httpRequest, req), nil
 }
 
-// EventToRequest converts an API Gateway proxy event into an http.Request object.
+// EventToRequest converts an Function URL proxy event into an http.Request object.
 // Returns the populated request maintaining headers
 func (r *RequestAccessorFu) EventToRequest(req events.LambdaFunctionURLRequest) (*http.Request, error) {
 	decodedBody := []byte(req.Body)
@@ -111,7 +111,6 @@ func (r *RequestAccessorFu) EventToRequest(req events.LambdaFunctionURLRequest) 
 	}
 
 	path := req.RawPath
-
 	// if RawPath empty is, populate from request context
 	if len(path) == 0 {
 		path = req.RequestContext.HTTP.Path
@@ -121,6 +120,7 @@ func (r *RequestAccessorFu) EventToRequest(req events.LambdaFunctionURLRequest) 
 		if strings.HasPrefix(path, r.stripBasePath) {
 			path = strings.Replace(path, r.stripBasePath, "", 1)
 		}
+		fmt.Printf("%v", path)
 	}
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
@@ -187,13 +187,13 @@ func addToContextFu(ctx context.Context, req *http.Request, functionUrlRequest e
 	return req.WithContext(ctx)
 }
 
-// GetAPIGatewayV2ContextFromContext retrieve APIGatewayProxyRequestContext from context.Context
+// GetFunctionUrlContextFromContext retrieve APIGatewayProxyRequestContext from context.Context
 func GetFunctionUrlContextFromContext(ctx context.Context) (events.LambdaFunctionURLRequestContext, bool) {
 	v, ok := ctx.Value(ctxKey{}).(requestContextFu)
 	return v.functionUrlProxyContext, ok
 }
 
-// GetRuntimeContextFromContextV2 retrieve Lambda Runtime Context from context.Context
+// GetRuntimeContextFromContextFu retrieve Lambda Runtime Context from context.Context
 func GetRuntimeContextFromContextFu(ctx context.Context) (*lambdacontext.LambdaContext, bool) {
 	v, ok := ctx.Value(ctxKey{}).(requestContextFu)
 	return v.lambdaContext, ok
