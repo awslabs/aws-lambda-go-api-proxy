@@ -1,4 +1,4 @@
-// Package core provides utility methods that help convert ALB events
+// Package core provides utility methods that help convert proxy events
 // into an http.Request and http.ResponseWriter
 package core
 
@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"strings"
 
@@ -19,28 +20,30 @@ import (
 )
 
 const (
-	// FnURLContextHeader is the custom header key used to store the
-	// Function URL context. To access the Context properties use the
-	// GetContext method of the RequestAccessorFnURL object.
-	FnURLContextHeader = "X-GoLambdaProxy-FnURL-Context"
+	// FuContextHeader is the custom header key used to store the
+	// Function Url context. To access the Context properties use the
+	// GetFunctionUrlContext method of the RequestAccessorFu object.
+	FuContextHeader = "X-GoLambdaProxy-Fu-Context"
 )
 
-// RequestAccessorFnURL objects give access to custom Function URL properties
+// RequestAccessorFu objects give access to custom API Gateway properties
 // in the request.
-type RequestAccessorFnURL struct {
+type RequestAccessorFu struct {
 	stripBasePath string
 }
 
-// GetALBContext extracts the ALB context object from a request's custom header.
-// Returns a populated events.ALBTargetGroupRequestContext object from the request.
-func (r *RequestAccessorFnURL) GetContext(req *http.Request) (events.LambdaFunctionURLRequestContext, error) {
-	if req.Header.Get(FnURLContextHeader) == "" {
-		return events.LambdaFunctionURLRequestContext{}, errors.New("no context header in request")
+// GetFunctionUrlContext extracts the API Gateway context object from a
+// request's custom header.
+// Returns a populated events.LambdaFunctionURLRequestContext object from
+// the request.
+func (r *RequestAccessorFu) GetFunctionUrlContext(req *http.Request) (events.LambdaFunctionURLRequestContext, error) {
+	if req.Header.Get(APIGwContextHeader) == "" {
+		return events.LambdaFunctionURLRequestContext{}, errors.New("No context header in request")
 	}
 	context := events.LambdaFunctionURLRequestContext{}
-	err := json.Unmarshal([]byte(req.Header.Get(FnURLContextHeader)), &context)
+	err := json.Unmarshal([]byte(req.Header.Get(FuContextHeader)), &context)
 	if err != nil {
-		log.Println("Error while unmarshalling context")
+		log.Println("Erorr while unmarshalling context")
 		log.Println(err)
 		return events.LambdaFunctionURLRequestContext{}, err
 	}
@@ -49,9 +52,9 @@ func (r *RequestAccessorFnURL) GetContext(req *http.Request) (events.LambdaFunct
 
 // StripBasePath instructs the RequestAccessor object that the given base
 // path should be removed from the request path before sending it to the
-// framework for routing. This is used when API Gateway is configured with
+// framework for routing. This is used when the Lambda is configured with
 // base path mappings in custom domain names.
-func (r *RequestAccessorFnURL) StripBasePath(basePath string) string {
+func (r *RequestAccessorFu) StripBasePath(basePath string) string {
 	if strings.Trim(basePath, " ") == "" {
 		r.stripBasePath = ""
 		return ""
@@ -71,32 +74,33 @@ func (r *RequestAccessorFnURL) StripBasePath(basePath string) string {
 	return newBasePath
 }
 
-// FunctionURLEventToHTTPRequest converts an a Function URL event into a http.Request object.
-// Returns the populated http request with additional custom header for the Function URL context.
-// To access these properties use the GetContext method of the RequestAccessorFnURL object.
-func (r *RequestAccessorFnURL) FunctionURLEventToHTTPRequest(req events.LambdaFunctionURLRequest) (*http.Request, error) {
+// ProxyEventToHTTPRequest converts an Function URL proxy event into a http.Request object.
+// Returns the populated http request with additional two custom headers for the stage variables and Function Url context.
+// To access these properties use GetFunctionUrlContext method of the RequestAccessor object.
+func (r *RequestAccessorFu) ProxyEventToHTTPRequest(req events.LambdaFunctionURLRequest) (*http.Request, error) {
 	httpRequest, err := r.EventToRequest(req)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return addToHeaderFnURL(httpRequest, req)
+	return addToHeaderFu(httpRequest, req)
 }
 
-// FunctionURLEventToHTTPRequestWithContext converts a Function URL event and context into an http.Request object.
-// Returns the populated http request with lambda context, Function URL RequestContext as part of its context.
-func (r *RequestAccessorFnURL) FunctionURLEventToHTTPRequestWithContext(ctx context.Context, req events.LambdaFunctionURLRequest) (*http.Request, error) {
+// EventToRequestWithContext converts an Function URL proxy event and context into an http.Request object.
+// Returns the populated http request with lambda context, stage variables and APIGatewayProxyRequestContext as part of its context.
+// Access those using GetFunctionUrlContextFromContext and GetRuntimeContextFromContext functions in this package.
+func (r *RequestAccessorFu) EventToRequestWithContext(ctx context.Context, req events.LambdaFunctionURLRequest) (*http.Request, error) {
 	httpRequest, err := r.EventToRequest(req)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
-	return addToContextFnURL(ctx, httpRequest, req), nil
+	return addToContextFu(ctx, httpRequest, req), nil
 }
 
-// EventToRequest converts a Function URL event into an http.Request object.
+// EventToRequest converts an Function URL proxy event into an http.Request object.
 // Returns the populated request maintaining headers
-func (r *RequestAccessorFnURL) EventToRequest(req events.LambdaFunctionURLRequest) (*http.Request, error) {
+func (r *RequestAccessorFu) EventToRequest(req events.LambdaFunctionURLRequest) (*http.Request, error) {
 	decodedBody := []byte(req.Body)
 	if req.IsBase64Encoded {
 		base64Body, err := base64.StdEncoding.DecodeString(req.Body)
@@ -107,21 +111,35 @@ func (r *RequestAccessorFnURL) EventToRequest(req events.LambdaFunctionURLReques
 	}
 
 	path := req.RawPath
+	// if RawPath empty is, populate from request context
+	if len(path) == 0 {
+		path = req.RequestContext.HTTP.Path
+	}
+
 	if r.stripBasePath != "" && len(r.stripBasePath) > 1 {
 		if strings.HasPrefix(path, r.stripBasePath) {
 			path = strings.Replace(path, r.stripBasePath, "", 1)
 		}
+		fmt.Printf("%v", path)
 	}
 	if !strings.HasPrefix(path, "/") {
 		path = "/" + path
 	}
-
 	serverAddress := "https://" + req.RequestContext.DomainName
 	if customAddress, ok := os.LookupEnv(CustomHostVariable); ok {
 		serverAddress = customAddress
 	}
+	path = serverAddress + path
 
-	path = serverAddress + path + "?" + req.RawQueryString
+	if len(req.RawQueryString) > 0 {
+		path += "?" + req.RawQueryString
+	} else if len(req.QueryStringParameters) > 0 {
+		values := url.Values{}
+		for key, value := range req.QueryStringParameters {
+			values.Add(key, value)
+		}
+		path += "?" + values.Encode()
+	}
 
 	httpRequest, err := http.NewRequest(
 		strings.ToUpper(req.RequestContext.HTTP.Method),
@@ -130,40 +148,58 @@ func (r *RequestAccessorFnURL) EventToRequest(req events.LambdaFunctionURLReques
 	)
 
 	if err != nil {
-		fmt.Printf("Could not convert request %s:%s to http.Request\n", req.RequestContext.HTTP.Method, req.RawPath)
+		fmt.Printf("Could not convert request %s:%s to http.Request\n", req.RequestContext.HTTP.Method, req.RequestContext.HTTP.Path)
 		log.Println(err)
 		return nil, err
 	}
 
-	for header, val := range req.Headers {
-		httpRequest.Header.Add(header, val)
+	httpRequest.RemoteAddr = req.RequestContext.HTTP.SourceIP
+
+	for _, cookie := range req.Cookies {
+		httpRequest.Header.Add("Cookie", cookie)
 	}
 
-	httpRequest.RemoteAddr = req.RequestContext.HTTP.SourceIP
+	for headerKey, headerValue := range req.Headers {
+		for _, val := range strings.Split(headerValue, ",") {
+			httpRequest.Header.Add(headerKey, strings.Trim(val, " "))
+		}
+	}
+
 	httpRequest.RequestURI = httpRequest.URL.RequestURI()
 
 	return httpRequest, nil
 }
 
-func addToHeaderFnURL(req *http.Request, fnUrlRequest events.LambdaFunctionURLRequest) (*http.Request, error) {
-	ctx, err := json.Marshal(fnUrlRequest.RequestContext)
+func addToHeaderFu(req *http.Request, functionUrlRequest events.LambdaFunctionURLRequest) (*http.Request, error) {
+	apiGwContext, err := json.Marshal(functionUrlRequest.RequestContext)
 	if err != nil {
-		log.Println("Could not Marshal Function URL context for custom header")
+		log.Println("Could not Marshal API GW context for custom header")
 		return req, err
 	}
-	req.Header.Set(FnURLContextHeader, string(ctx))
+	req.Header.Add(APIGwContextHeader, string(apiGwContext))
 	return req, nil
 }
 
-// adds context data to http request so we can pass
-func addToContextFnURL(ctx context.Context, req *http.Request, fnUrlRequest events.LambdaFunctionURLRequest) *http.Request {
+func addToContextFu(ctx context.Context, req *http.Request, functionUrlRequest events.LambdaFunctionURLRequest) *http.Request {
 	lc, _ := lambdacontext.FromContext(ctx)
-	rc := requestContextFnURL{lambdaContext: lc, fnUrlContext: fnUrlRequest.RequestContext}
+	rc := requestContextFu{lambdaContext: lc, functionUrlProxyContext: functionUrlRequest.RequestContext}
 	ctx = context.WithValue(ctx, ctxKey{}, rc)
 	return req.WithContext(ctx)
 }
 
-type requestContextFnURL struct {
-	lambdaContext *lambdacontext.LambdaContext
-	fnUrlContext  events.LambdaFunctionURLRequestContext
+// GetFunctionUrlContextFromContext retrieve APIGatewayProxyRequestContext from context.Context
+func GetFunctionUrlContextFromContext(ctx context.Context) (events.LambdaFunctionURLRequestContext, bool) {
+	v, ok := ctx.Value(ctxKey{}).(requestContextFu)
+	return v.functionUrlProxyContext, ok
+}
+
+// GetRuntimeContextFromContextFu retrieve Lambda Runtime Context from context.Context
+func GetRuntimeContextFromContextFu(ctx context.Context) (*lambdacontext.LambdaContext, bool) {
+	v, ok := ctx.Value(ctxKey{}).(requestContextFu)
+	return v.lambdaContext, ok
+}
+
+type requestContextFu struct {
+	lambdaContext           *lambdacontext.LambdaContext
+	functionUrlProxyContext events.LambdaFunctionURLRequestContext
 }

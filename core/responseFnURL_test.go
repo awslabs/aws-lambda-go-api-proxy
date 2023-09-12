@@ -60,7 +60,7 @@ var _ = Describe("FunctionUrlResponseWriter tests", func() {
 			resp.Write([]byte(xmlBodyContent))
 
 			Expect("application/json").To(Equal(resp.Header().Get("Content-Type")))
-			proxyResp, err := resp.GetFunctionUrlResponse()
+			proxyResp, err := resp.GetProxyResponse()
 			Expect(err).To(BeNil())
 			Expect(1).To(Equal(len(proxyResp.Headers)))
 			Expect("application/json").To(Equal(proxyResp.Headers["Content-Type"]))
@@ -73,7 +73,7 @@ var _ = Describe("FunctionUrlResponseWriter tests", func() {
 
 			Expect("").ToNot(Equal(resp.Header().Get("Content-Type")))
 			Expect(true).To(Equal(strings.HasPrefix(resp.Header().Get("Content-Type"), "text/xml;")))
-			proxyResp, err := resp.GetFunctionUrlResponse()
+			proxyResp, err := resp.GetProxyResponse()
 			Expect(err).To(BeNil())
 			Expect(1).To(Equal(len(proxyResp.Headers)))
 			Expect(true).To(Equal(strings.HasPrefix(proxyResp.Headers["Content-Type"], "text/xml;")))
@@ -86,7 +86,7 @@ var _ = Describe("FunctionUrlResponseWriter tests", func() {
 
 			Expect("").ToNot(Equal(resp.Header().Get("Content-Type")))
 			Expect(true).To(Equal(strings.HasPrefix(resp.Header().Get("Content-Type"), "text/html;")))
-			proxyResp, err := resp.GetFunctionUrlResponse()
+			proxyResp, err := resp.GetProxyResponse()
 			Expect(err).To(BeNil())
 			Expect(1).To(Equal(len(proxyResp.Headers)))
 			Expect(true).To(Equal(strings.HasPrefix(proxyResp.Headers["Content-Type"], "text/html;")))
@@ -99,7 +99,7 @@ var _ = Describe("FunctionUrlResponseWriter tests", func() {
 		emptyResponse.Header().Add("Content-Type", "application/json")
 
 		It("Refuses empty responses with default status code", func() {
-			_, err := emptyResponse.GetFunctionUrlResponse()
+			_, err := emptyResponse.GetProxyResponse()
 			Expect(err).ToNot(BeNil())
 			Expect("Status code not set on response").To(Equal(err.Error()))
 		})
@@ -109,7 +109,7 @@ var _ = Describe("FunctionUrlResponseWriter tests", func() {
 		simpleResponse.WriteHeader(http.StatusAccepted)
 
 		It("Writes function URL response correctly", func() {
-			functionUrlResponse, err := simpleResponse.GetFunctionUrlResponse()
+			functionUrlResponse, err := simpleResponse.GetProxyResponse()
 			Expect(err).To(BeNil())
 			Expect(functionUrlResponse).ToNot(BeNil())
 			Expect(http.StatusAccepted).To(Equal(functionUrlResponse.StatusCode))

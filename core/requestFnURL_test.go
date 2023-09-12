@@ -25,7 +25,7 @@ var _ = Describe("RequestAccessorFu tests", func() {
 		mvqs["k1"] = []string{"t1"}
 		mvqs["k2"] = []string{"t2"}
 		bdy := "Test BODY"
-		basePathRequest := getFunctionUrlProxyRequest("/hello", getFunctionUrlRequestContext("/hello", "GET"), false, hdr, bdy, qs, mvqs)
+		basePathRequest := getFunctionURLProxyRequest("/hello", getFunctionURLRequestContext("/hello", "GET"), false, hdr, bdy, qs, mvqs)
 
 		It("Correctly converts a basic event", func() {
 			httpReq, err := accessor.EventToRequestWithContext(context.Background(), basePathRequest)
@@ -45,7 +45,7 @@ var _ = Describe("RequestAccessorFu tests", func() {
 
 		encodedBody := base64.StdEncoding.EncodeToString(binaryBody)
 
-		binaryRequest := getFunctionUrlProxyRequest("/hello", getFunctionUrlRequestContext("/hello", "POST"), true, hdr, bdy, qs, mvqs)
+		binaryRequest := getFunctionURLProxyRequest("/hello", getFunctionURLRequestContext("/hello", "POST"), true, hdr, bdy, qs, mvqs)
 		binaryRequest.Body = encodedBody
 		binaryRequest.IsBase64Encoded = true
 
@@ -57,7 +57,7 @@ var _ = Describe("RequestAccessorFu tests", func() {
 			Expect("POST").To(Equal(httpReq.Method))
 		})
 
-		mqsRequest := getFunctionUrlProxyRequest("/hello", getFunctionUrlRequestContext("/hello", "GET"), false, hdr, bdy, qs, mvqs)
+		mqsRequest := getFunctionURLProxyRequest("/hello", getFunctionURLRequestContext("/hello", "GET"), false, hdr, bdy, qs, mvqs)
 		mqsRequest.RawQueryString = "hello=1&world=2&world=3"
 		mqsRequest.QueryStringParameters = map[string]string{
 			"hello": "1",
@@ -99,7 +99,7 @@ var _ = Describe("RequestAccessorFu tests", func() {
 	})
 })
 
-func getFunctionUrlProxyRequest(path string, requestCtx events.LambdaFunctionURLRequestContext,
+func getFunctionURLProxyRequest(path string, requestCtx events.LambdaFunctionURLRequestContext,
 	is64 bool, header map[string]string, body string, qs map[string]string, mvqs map[string][]string) events.LambdaFunctionURLRequest {
 	return events.LambdaFunctionURLRequest{
 		RequestContext:  requestCtx,
@@ -111,7 +111,7 @@ func getFunctionUrlProxyRequest(path string, requestCtx events.LambdaFunctionURL
 	}
 }
 
-func getFunctionUrlRequestContext(path, method string) events.LambdaFunctionURLRequestContext {
+func getFunctionURLRequestContext(path, method string) events.LambdaFunctionURLRequestContext {
 	return events.LambdaFunctionURLRequestContext{
 		DomainName: "example.com",
 		HTTP: events.LambdaFunctionURLRequestContextHTTPDescription{
