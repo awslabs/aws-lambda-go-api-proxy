@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
-	"github.com/dza89/aws-lambda-go-api-proxy/core"
+	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/utils"
 	"github.com/valyala/fasthttp"
@@ -23,7 +23,7 @@ import (
 type FiberLambda struct {
 	core.RequestAccessor
 	v2  core.RequestAccessorV2
-	fn  core.RequestAccessorFn
+	fn  core.RequestAccessorFnURL
 	app *fiber.App
 }
 
@@ -117,7 +117,7 @@ func (f *FiberLambda) proxyFunctionURL(req *http.Request, err error) (events.Lam
 	resp := core.NewFunctionURLResponseWriter()
 	f.adaptor(resp, req)
 
-	FunctionURLResponse, err := resp.GetFunctionURLResponse()
+	FunctionURLResponse, err := resp.GetProxyResponse()
 	if err != nil {
 		return core.FunctionURLTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
 	}

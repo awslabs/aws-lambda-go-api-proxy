@@ -23,29 +23,29 @@ func NewFunctionURL(handler http.Handler) *HandlerAdapterFnURL {
 // object, and sends it to the http.HandlerFunc for routing.
 // It returns a proxy response object generated from the http.ResponseWriter.
 func (h *HandlerAdapterFnURL) Proxy(event events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	req, err := h.FunctionURLEventToHTTPRequest(event)
+	req, err := h.ProxyEventToHTTPRequest(event)
 	return h.proxyInternal(req, err)
 }
 
-// ProxyWithContext receives context and an ALB proxy event,
-// transforms them into an http.Request object, and sends it to the http.Handler for routing.
+// ProxyWithContext receives context and an API Gateway proxy event,
+// transforms them into an http.Request object, and sends it to the echo.Echo for routing.
 // It returns a proxy response object generated from the http.ResponseWriter.
 func (h *HandlerAdapterFnURL) ProxyWithContext(ctx context.Context, event events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	req, err := h.FunctionURLEventToHTTPRequestWithContext(ctx, event)
+	req, err := h.EventToRequestWithContext(ctx, event)
 	return h.proxyInternal(req, err)
 }
 
 func (h *HandlerAdapterFnURL) proxyInternal(req *http.Request, err error) (events.LambdaFunctionURLResponse, error) {
 	if err != nil {
-		return core.GatewayTimeoutFnURL(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
+		return core.FunctionURLTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
-	w := core.NewProxyResponseWriterFnURL()
+	w := core.NewFunctionURLResponseWriter()
 	h.handler.ServeHTTP(http.ResponseWriter(w), req)
 
 	resp, err := w.GetProxyResponse()
 	if err != nil {
-		return core.GatewayTimeoutFnURL(), core.NewLoggedError("Error while generating proxy response: %v", err)
+		return core.FunctionURLTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
 	}
 
 	return resp, nil
