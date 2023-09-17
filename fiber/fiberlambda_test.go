@@ -296,7 +296,7 @@ var _ = Describe("FiberLambda tests", func() {
 				RawPath: "/ping",
 			}
 
-			resp, err := adapter.ProxyFunctionUrl(req)
+			resp, err := adapter.ProxyFunctionURL(req)
 
 			Expect(err).To(BeNil())
 			Expect(resp.StatusCode).To(Equal(200))
@@ -316,7 +316,7 @@ var _ = Describe("FiberLambda tests", func() {
 			}
 
 			ctx := context.Background()
-			resp, err := adapter.ProxyFunctionUrlWithContext(ctx, req)
+			resp, err := adapter.ProxyFunctionURLWithContext(ctx, req)
 
 			Expect(err).To(BeNil())
 			Expect(resp.StatusCode).To(Equal(200))

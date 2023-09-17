@@ -9,9 +9,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("FunctionUrlResponseWriter tests", func() {
+var _ = Describe("FunctionURLResponseWriter tests", func() {
 	Context("writing to response object", func() {
-		response := NewFunctionUrlResponseWriter()
+		response := NewFunctionURLResponseWriter()
 
 		It("Sets the correct default status", func() {
 			Expect(defaultStatusCode).To(Equal(response.status))
@@ -54,7 +54,7 @@ var _ = Describe("FunctionUrlResponseWriter tests", func() {
 		htmlBodyContent := " <!DOCTYPE html><html><head><meta charset=\"UTF-8\"><title>Title of the document</title></head><body>Content of the document......</body></html>"
 
 		It("Does not set the content type if it's already set", func() {
-			resp := NewFunctionUrlResponseWriter()
+			resp := NewFunctionURLResponseWriter()
 			resp.Header().Add("Content-Type", "application/json")
 
 			resp.Write([]byte(xmlBodyContent))
@@ -68,7 +68,7 @@ var _ = Describe("FunctionUrlResponseWriter tests", func() {
 		})
 
 		It("Sets the content type to text/xml given the body", func() {
-			resp := NewFunctionUrlResponseWriter()
+			resp := NewFunctionURLResponseWriter()
 			resp.Write([]byte(xmlBodyContent))
 
 			Expect("").ToNot(Equal(resp.Header().Get("Content-Type")))
@@ -81,7 +81,7 @@ var _ = Describe("FunctionUrlResponseWriter tests", func() {
 		})
 
 		It("Sets the content type to text/html given the body", func() {
-			resp := NewFunctionUrlResponseWriter()
+			resp := NewFunctionURLResponseWriter()
 			resp.Write([]byte(htmlBodyContent))
 
 			Expect("").ToNot(Equal(resp.Header().Get("Content-Type")))
@@ -95,7 +95,7 @@ var _ = Describe("FunctionUrlResponseWriter tests", func() {
 	})
 
 	Context("Export Lambda Function URL response", func() {
-		emptyResponse := NewFunctionUrlResponseWriter()
+		emptyResponse := NewFunctionURLResponseWriter()
 		emptyResponse.Header().Add("Content-Type", "application/json")
 
 		It("Refuses empty responses with default status code", func() {
@@ -104,15 +104,15 @@ var _ = Describe("FunctionUrlResponseWriter tests", func() {
 			Expect("Status code not set on response").To(Equal(err.Error()))
 		})
 
-		simpleResponse := NewFunctionUrlResponseWriter()
+		simpleResponse := NewFunctionURLResponseWriter()
 		simpleResponse.Write([]byte("https://example.com"))
 		simpleResponse.WriteHeader(http.StatusAccepted)
 
 		It("Writes function URL response correctly", func() {
-			functionUrlResponse, err := simpleResponse.GetProxyResponse()
+			FunctionURLResponse, err := simpleResponse.GetProxyResponse()
 			Expect(err).To(BeNil())
-			Expect(functionUrlResponse).ToNot(BeNil())
-			Expect(http.StatusAccepted).To(Equal(functionUrlResponse.StatusCode))
+			Expect(FunctionURLResponse).ToNot(BeNil())
+			Expect(http.StatusAccepted).To(Equal(FunctionURLResponse.StatusCode))
 		})
 	})
 })

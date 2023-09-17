@@ -13,27 +13,27 @@ import (
 	"github.com/aws/aws-lambda-go/events"
 )
 
-// FunctionUrlResponseWriter implements http.ResponseWriter and adds the method
+// FunctionURLResponseWriter implements http.ResponseWriter and adds the method
 // necessary to return an events.LambdaFunctionURLResponse object
-type FunctionUrlResponseWriter struct {
+type FunctionURLResponseWriter struct {
 	headers   http.Header
 	body      bytes.Buffer
 	status    int
 	observers []chan<- bool
 }
 
-// NewFunctionUrlResponseWriter returns a new FunctionUrlResponseWriter object.
+// NewFunctionURLResponseWriter returns a new FunctionURLResponseWriter object.
 // The object is initialized with an empty map of headers and a
 // status code of -1
-func NewFunctionUrlResponseWriter() *FunctionUrlResponseWriter {
-	return &FunctionUrlResponseWriter{
+func NewFunctionURLResponseWriter() *FunctionURLResponseWriter {
+	return &FunctionURLResponseWriter{
 		headers:   make(http.Header),
 		status:    defaultStatusCode,
 		observers: make([]chan<- bool, 0),
 	}
 }
 
-func (r *FunctionUrlResponseWriter) CloseNotify() <-chan bool {
+func (r *FunctionURLResponseWriter) CloseNotify() <-chan bool {
 	ch := make(chan bool, 1)
 
 	r.observers = append(r.observers, ch)
@@ -41,21 +41,21 @@ func (r *FunctionUrlResponseWriter) CloseNotify() <-chan bool {
 	return ch
 }
 
-func (r *FunctionUrlResponseWriter) notifyClosed() {
+func (r *FunctionURLResponseWriter) notifyClosed() {
 	for _, v := range r.observers {
 		v <- true
 	}
 }
 
 // Header implementation from the http.ResponseWriter interface.
-func (r *FunctionUrlResponseWriter) Header() http.Header {
+func (r *FunctionURLResponseWriter) Header() http.Header {
 	return r.headers
 }
 
 // Write sets the response body in the object. If no status code
 // was set before with the WriteHeader method it sets the status
 // for the response to 200 OK.
-func (r *FunctionUrlResponseWriter) Write(body []byte) (int, error) {
+func (r *FunctionURLResponseWriter) Write(body []byte) (int, error) {
 	if r.status == defaultStatusCode {
 		r.status = http.StatusOK
 	}
@@ -73,7 +73,7 @@ func (r *FunctionUrlResponseWriter) Write(body []byte) (int, error) {
 
 // WriteHeader sets a status code for the response. This method is used
 // for error responses.
-func (r *FunctionUrlResponseWriter) WriteHeader(status int) {
+func (r *FunctionURLResponseWriter) WriteHeader(status int) {
 	r.status = status
 }
 
@@ -81,7 +81,7 @@ func (r *FunctionUrlResponseWriter) WriteHeader(status int) {
 // an events.APIGatewayProxyResponse object.
 // Returns a populated proxy response object. If the response is invalid, for example
 // has no headers or an invalid status code returns an error.
-func (r *FunctionUrlResponseWriter) GetProxyResponse() (events.LambdaFunctionURLResponse, error) {
+func (r *FunctionURLResponseWriter) GetProxyResponse() (events.LambdaFunctionURLResponse, error) {
 	r.notifyClosed()
 
 	if r.status == defaultStatusCode {

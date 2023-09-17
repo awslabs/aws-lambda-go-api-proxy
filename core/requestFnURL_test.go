@@ -12,9 +12,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("RequestAccessorFu tests", func() {
+var _ = Describe("RequestAccessorFnURL tests", func() {
 	Context("Function URL event conversion", func() {
-		accessor := core.RequestAccessorFu{}
+		accessor := core.RequestAccessorFnURL{}
 		qs := make(map[string]string)
 		mvqs := make(map[string][]string)
 		hdr := make(map[string]string)
@@ -81,7 +81,7 @@ var _ = Describe("RequestAccessorFu tests", func() {
 	})
 
 	Context("StripBasePath tests", func() {
-		accessor := core.RequestAccessorFu{}
+		accessor := core.RequestAccessorFnURL{}
 		It("Adds prefix slash", func() {
 			basePath := accessor.StripBasePath("app1")
 			Expect("/app1").To(Equal(basePath))

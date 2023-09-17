@@ -23,7 +23,7 @@ import (
 type FiberLambda struct {
 	core.RequestAccessor
 	v2  core.RequestAccessorV2
-	fu  core.RequestAccessorFu
+	fn  core.RequestAccessorFn
 	app *fiber.App
 }
 
@@ -64,14 +64,14 @@ func (f *FiberLambda) ProxyWithContextV2(ctx context.Context, req events.APIGate
 	return f.proxyInternalV2(fiberRequest, err)
 }
 
-func (f *FiberLambda) ProxyFunctionUrl(req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	fiberRequest, err := f.fu.EventToRequest(req)
-	return f.proxyFunctionUrl(fiberRequest, err)
+func (f *FiberLambda) ProxyFunctionURL(req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	fiberRequest, err := f.fn.EventToRequest(req)
+	return f.proxyFunctionURL(fiberRequest, err)
 }
 
-func (f *FiberLambda) ProxyFunctionUrlWithContext(ctx context.Context, req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
-	fiberRequest, err := f.fu.EventToRequestWithContext(ctx, req)
-	return f.proxyFunctionUrl(fiberRequest, err)
+func (f *FiberLambda) ProxyFunctionURLWithContext(ctx context.Context, req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	fiberRequest, err := f.fn.EventToRequestWithContext(ctx, req)
+	return f.proxyFunctionURL(fiberRequest, err)
 }
 
 func (f *FiberLambda) proxyInternal(req *http.Request, err error) (events.APIGatewayProxyResponse, error) {
@@ -108,21 +108,21 @@ func (f *FiberLambda) proxyInternalV2(req *http.Request, err error) (events.APIG
 	return proxyResponse, nil
 }
 
-func (f *FiberLambda) proxyFunctionUrl(req *http.Request, err error) (events.LambdaFunctionURLResponse, error) {
+func (f *FiberLambda) proxyFunctionURL(req *http.Request, err error) (events.LambdaFunctionURLResponse, error) {
 
 	if err != nil {
-		return core.FunctionUrlTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
+		return core.FunctionURLTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
 	}
 
-	resp := core.NewFunctionUrlResponseWriter()
+	resp := core.NewFunctionURLResponseWriter()
 	f.adaptor(resp, req)
 
-	functionUrlResponse, err := resp.GetFunctionUrlResponse()
+	FunctionURLResponse, err := resp.GetFunctionURLResponse()
 	if err != nil {
-		return core.FunctionUrlTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
+		return core.FunctionURLTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
 	}
 
-	return functionUrlResponse, nil
+	return FunctionURLResponse, nil
 }
 
 func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
