@@ -5,9 +5,12 @@ package fiberadapter
 
 import (
 	"context"
-	"io/ioutil"
+	"fmt"
+	"io"
+	"log"
 	"net"
 	"net/http"
+	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/gofiber/fiber/v2"
@@ -103,7 +106,7 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 	defer fasthttp.ReleaseRequest(req)
 
 	// Convert net/http -> fasthttp request
-	body, err := ioutil.ReadAll(r.Body)
+	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		http.Error(w, utils.StatusMessage(fiber.StatusInternalServerError), fiber.StatusInternalServerError)
 		return
@@ -129,8 +132,16 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	remoteAddr, err := net.ResolveTCPAddr("tcp", r.RemoteAddr)
+	// We need to make sure the net.ResolveTCPAddr call works as it expects a port
+	addrWithPort := r.RemoteAddr
+	if !strings.Contains(r.RemoteAddr, ":") {
+		addrWithPort = r.RemoteAddr + ":80" // assuming a default port
+	}
+
+	remoteAddr, err := net.ResolveTCPAddr("tcp", addrWithPort)
 	if err != nil {
+		fmt.Printf("could not resolve TCP address for addr %s\n", r.RemoteAddr)
+		log.Println(err)
 		http.Error(w, utils.StatusMessage(fiber.StatusInternalServerError), fiber.StatusInternalServerError)
 		return
 	}

@@ -39,6 +39,39 @@ var _ = Describe("FiberLambda tests", func() {
 		})
 	})
 
+	Context("RemoteAddr handling", func() {
+		It("Properly parses the IP address", func() {
+			app := fiber.New()
+			app.Get("/ping", func(c *fiber.Ctx) error {
+				// make sure the ip address is actually set properly
+				Expect(c.Context().RemoteAddr().String()).To(Equal("8.8.8.8:80"))
+				return c.SendString("pong")
+			})
+
+			adapter := fiberadaptor.New(app)
+
+			req := events.APIGatewayProxyRequest{
+				Path:       "/ping",
+				HTTPMethod: "GET",
+				RequestContext: events.APIGatewayProxyRequestContext{
+					Identity: events.APIGatewayRequestIdentity{
+						SourceIP: "8.8.8.8",
+					},
+				},
+			}
+
+			resp, err := adapter.ProxyWithContext(context.Background(), req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+
+			resp, err = adapter.Proxy(req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+		})
+	})
+
 	Context("Request header", func() {
 		It("Check pass canonical header to fiber", func() {
 			app := fiber.New()
