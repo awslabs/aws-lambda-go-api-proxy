@@ -41,3 +41,30 @@ var _ = Describe("ChiLambda tests", func() {
 		})
 	})
 })
+
+var _ = Describe("ChiLambdaALB tests", func() {
+	Context("Simple ping request", func() {
+		It("Proxies the event correctly", func() {
+			log.Println("Starting test")
+
+			r := chi.NewRouter()
+			r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
+				w.Write([]byte("pong"))
+			})
+
+			adapter := chiadapter.NewALB(r)
+
+			req := events.ALBTargetGroupRequest{
+				HTTPMethod: "GET",
+				Path:       "/ping",
+				RequestContext: events.ALBTargetGroupRequestContext{
+					ELB: events.ELBContext{TargetGroupArn: " ad"},
+				}}
+
+			resp, err := adapter.Proxy(req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+		})
+	})
+})
