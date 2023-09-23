@@ -5,7 +5,9 @@ package fiberadapter
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -157,16 +159,20 @@ func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	if err != nil {
-		http.Error(w, utils.StatusMessage(fiber.StatusInternalServerError), fiber.StatusInternalServerError)
-		return
-	}
 	// We need to make sure the net.ResolveTCPAddr call works as it expects a port
 	addrWithPort := r.RemoteAddr
 	if !strings.Contains(r.RemoteAddr, ":") {
 		addrWithPort = r.RemoteAddr + ":80" // assuming a default port
 	}
+
 	remoteAddr, err := net.ResolveTCPAddr("tcp", addrWithPort)
+	if err != nil {
+		fmt.Printf("could not resolve TCP address for addr %s\n", r.RemoteAddr)
+		log.Println(err)
+		http.Error(w, utils.StatusMessage(fiber.StatusInternalServerError), fiber.StatusInternalServerError)
+		return
+	}
+
 	// New fasthttp Ctx
 	var fctx fasthttp.RequestCtx
 	fctx.Init(req, remoteAddr, nil)
