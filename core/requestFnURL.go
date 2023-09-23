@@ -20,13 +20,13 @@ import (
 )
 
 const (
-	// FuContextHeader is the custom header key used to store the
+	// FnURLContextHeader is the custom header key used to store the
 	// Function Url context. To access the Context properties use the
-	// GetFunctionURLContext method of the RequestAccessorFu object.
+	// GetFunctionURLContext method of the RequestAccessorFnURL object.
 	FnURLContextHeader = "X-GoLambdaProxy-Fu-Context"
 )
 
-// RequestAccessorFu objects give access to custom API Gateway properties
+// RequestAccessorFnURL objects give access to custom API Gateway properties
 // in the request.
 type RequestAccessorFnURL struct {
 	stripBasePath string
@@ -193,7 +193,7 @@ func GetFunctionURLContextFromContext(ctx context.Context) (events.LambdaFunctio
 	return v.FunctionURLProxyContext, ok
 }
 
-// GetRuntimeContextFromContextFu retrieve Lambda Runtime Context from context.Context
+// GetRuntimeContextFromContextFnURL retrieve Lambda Runtime Context from context.Context
 func GetRuntimeContextFromContextFnURL(ctx context.Context) (*lambdacontext.LambdaContext, bool) {
 	v, ok := ctx.Value(ctxKey{}).(requestContextFnURL)
 	return v.lambdaContext, ok
