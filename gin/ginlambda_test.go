@@ -42,6 +42,53 @@ var _ = Describe("GinLambda tests", func() {
 			Expect(resp.StatusCode).To(Equal(200))
 		})
 	})
+	Context("Function URL", func() {
+		It("Proxies the event correctly", func() {
+			log.Println("Starting test")
+			r := gin.Default()
+			r.GET("/ping", func(c *gin.Context) {
+				log.Println("Handler!!")
+				c.JSON(200, gin.H{
+					"message": "pong",
+				})
+			})
+
+			adapter := ginadapter.New(r)
+
+			req := events.LambdaFunctionURLRequest{
+				RawPath: "/ping",
+			}
+
+			resp, err := adapter.ProxyFunctionURL(req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+			Expect(resp.Body).To(Equal("{\"message\":\"pong\"}"))
+		})
+
+		It("Proxies the event correctly with context", func() {
+			r := gin.Default()
+			r.GET("/ping", func(c *gin.Context) {
+				log.Println("Handler!!")
+				c.JSON(200, gin.H{
+					"message": "pong",
+				})
+			})
+
+			adapter := ginadapter.New(r)
+
+			req := events.LambdaFunctionURLRequest{
+				RawPath: "/ping",
+			}
+
+			ctx := context.Background()
+			resp, err := adapter.ProxyFunctionURLWithContext(ctx, req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+			Expect(resp.Body).To(Equal("{\"message\":\"pong\"}"))
+		})
+	})
 })
 
 var _ = Describe("GinLambdaV2 tests", func() {

@@ -17,6 +17,7 @@ import (
 // creates a proxy response object from the http.ResponseWriter
 type GinLambda struct {
 	core.RequestAccessor
+	fn core.RequestAccessorFnURL
 
 	ginEngine *gin.Engine
 }
@@ -44,6 +45,16 @@ func (g *GinLambda) ProxyWithContext(ctx context.Context, req events.APIGatewayP
 	return g.proxyInternal(ginRequest, err)
 }
 
+func (g *GinLambda) ProxyFunctionURL(req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	ginRequest, err := g.fn.ProxyEventToHTTPRequest(req)
+	return g.proxyFunctionURL(ginRequest, err)
+}
+
+func (g *GinLambda) ProxyFunctionURLWithContext(ctx context.Context, req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	ginRequest, err := g.fn.EventToRequestWithContext(ctx, req)
+	return g.proxyFunctionURL(ginRequest, err)
+}
+
 func (g *GinLambda) proxyInternal(req *http.Request, err error) (events.APIGatewayProxyResponse, error) {
 
 	if err != nil {
@@ -59,4 +70,21 @@ func (g *GinLambda) proxyInternal(req *http.Request, err error) (events.APIGatew
 	}
 
 	return proxyResponse, nil
+}
+
+func (g *GinLambda) proxyFunctionURL(req *http.Request, err error) (events.LambdaFunctionURLResponse, error) {
+
+	if err != nil {
+		return core.FunctionURLTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
+	}
+
+	resp := core.NewFunctionURLResponseWriter()
+	g.ginEngine.ServeHTTP(resp, req)
+
+	FunctionURLResponse, err := resp.GetProxyResponse()
+	if err != nil {
+		return core.FunctionURLTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
+	}
+
+	return FunctionURLResponse, nil
 }
