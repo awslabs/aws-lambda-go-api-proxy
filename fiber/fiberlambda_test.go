@@ -315,4 +315,45 @@ var _ = Describe("FiberLambda tests", func() {
 			Expect(resp.Body).To(Equal(""))
 		})
 	})
+
+	Context("Function URL", func() {
+		It("Proxies the event correctly", func() {
+			app := fiber.New()
+			app.Get("/ping", func(c *fiber.Ctx) error {
+				return c.SendString("pong")
+			})
+
+			adapter := fiberadaptor.New(app)
+
+			req := events.LambdaFunctionURLRequest{
+				RawPath: "/ping",
+			}
+
+			resp, err := adapter.ProxyFunctionURL(req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+			Expect(resp.Body).To(Equal("pong"))
+		})
+
+		It("Proxies the event correctly with context", func() {
+			app := fiber.New()
+			app.Get("/ping", func(c *fiber.Ctx) error {
+				return c.SendString("pong")
+			})
+
+			adapter := fiberadaptor.New(app)
+
+			req := events.LambdaFunctionURLRequest{
+				RawPath: "/ping",
+			}
+
+			ctx := context.Background()
+			resp, err := adapter.ProxyFunctionURLWithContext(ctx, req)
+
+			Expect(err).To(BeNil())
+			Expect(resp.StatusCode).To(Equal(200))
+			Expect(resp.Body).To(Equal("pong"))
+		})
+	})
 })
