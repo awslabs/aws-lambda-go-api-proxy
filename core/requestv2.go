@@ -37,7 +37,7 @@ func (r *RequestAccessorV2) GetAPIGatewayContextV2(req *http.Request) (events.AP
 	context := events.APIGatewayV2HTTPRequestContext{}
 	err := json.Unmarshal([]byte(req.Header.Get(APIGwContextHeader)), &context)
 	if err != nil {
-		log.Println("Erorr while unmarshalling context")
+		log.Println("Error while unmarshalling context")
 		log.Println(err)
 		return events.APIGatewayV2HTTPRequestContext{}, err
 	}
@@ -55,11 +55,29 @@ func (r *RequestAccessorV2) GetAPIGatewayStageVars(req *http.Request) (map[strin
 	}
 	err := json.Unmarshal([]byte(req.Header.Get(APIGwStageVarsHeader)), &stageVars)
 	if err != nil {
-		log.Println("Erorr while unmarshalling stage variables")
+		log.Println("Error while unmarshalling stage variables")
 		log.Println(err)
 		return stageVars, err
 	}
 	return stageVars, nil
+}
+
+// GetAPIGatewayPathParams extracts the API Gateway path parameters from a
+// request's custom header.
+// Returns a map[string]string of the path parameters and their values from
+// the request.
+func (r *RequestAccessorV2) GetAPIGatewayPathParams(req *http.Request) (map[string]string, error) {
+	pathParams := make(map[string]string)
+	if req.Header.Get(APIGwStageVarsHeader) == "" {
+		return pathParams, errors.New("No path params header in request")
+	}
+	err := json.Unmarshal([]byte(req.Header.Get(APIGwPathParamsHeader)), &pathParams)
+	if err != nil {
+		log.Println("Error while unmarshalling path params")
+		log.Println(err)
+		return pathParams, err
+	}
+	return pathParams, nil
 }
 
 // StripBasePath instructs the RequestAccessor object that the given base
@@ -201,12 +219,23 @@ func addToHeaderV2(req *http.Request, apiGwRequest events.APIGatewayV2HTTPReques
 		return req, err
 	}
 	req.Header.Add(APIGwContextHeader, string(apiGwContext))
+	pathParams, err := json.Marshal(apiGwRequest.PathParameters)
+	if err != nil {
+		log.Println("Could not Marshal path parameters for custom header")
+		return req, err
+	}
+	req.Header.Add(APIGwPathParamsHeader, string(pathParams))
 	return req, nil
 }
 
 func addToContextV2(ctx context.Context, req *http.Request, apiGwRequest events.APIGatewayV2HTTPRequest) *http.Request {
 	lc, _ := lambdacontext.FromContext(ctx)
-	rc := requestContextV2{lambdaContext: lc, gatewayProxyContext: apiGwRequest.RequestContext, stageVars: apiGwRequest.StageVariables}
+	rc := requestContextV2{
+		lambdaContext:       lc,
+		gatewayProxyContext: apiGwRequest.RequestContext,
+		stageVars:           apiGwRequest.StageVariables,
+		pathParams:          apiGwRequest.PathParameters,
+	}
 	ctx = context.WithValue(ctx, ctxKey{}, rc)
 	return req.WithContext(ctx)
 }
@@ -229,10 +258,17 @@ func GetStageVarsFromContextV2(ctx context.Context) (map[string]string, bool) {
 	return v.stageVars, ok
 }
 
+// GetPathParamsFromContextV2 retrieve path params from context
+func GetPathParamsFromContextV2(ctx context.Context) (map[string]string, bool) {
+	v, ok := ctx.Value(ctxKey{}).(requestContextV2)
+	return v.pathParams, ok
+}
+
 type requestContextV2 struct {
 	lambdaContext       *lambdacontext.LambdaContext
 	gatewayProxyContext events.APIGatewayV2HTTPRequestContext
 	stageVars           map[string]string
+	pathParams          map[string]string
 }
 
 // splitSingletonHeaders splits the headers into single-value headers and other,
