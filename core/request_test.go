@@ -5,8 +5,10 @@ import (
 	"encoding/base64"
 	"io/ioutil"
 	"math/rand"
+	"net/url"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambdacontext"
@@ -64,14 +66,19 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect(binaryBody).To(Equal(bodyBytes))
 		})
 
+		now := time.Now().UTC()
+		urlEncodedTimestamp := url.QueryEscape(now.Format(time.RFC3339))
+
 		mqsRequest := getProxyRequest("/hello", "GET")
 		mqsRequest.MultiValueQueryStringParameters = map[string][]string{
-			"hello": {"1"},
-			"world": {"2", "3"},
+			"hello":                                 {"1"},
+			"world":                                 {"2", "3"},
+			url.QueryEscape("urlEncoded:Timestamp"): {urlEncodedTimestamp},
 		}
 		mqsRequest.QueryStringParameters = map[string]string{
-			"hello": "1",
-			"world": "2",
+			"hello":                                 "1",
+			"world":                                 "2",
+			url.QueryEscape("urlEncoded:Timestamp"): urlEncodedTimestamp,
 		}
 		It("Populates multiple value query string correctly", func() {
 			httpReq, err := accessor.EventToRequestWithContext(context.Background(), mqsRequest)
@@ -83,22 +90,28 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect("GET").To(Equal(httpReq.Method))
 
 			query := httpReq.URL.Query()
-			Expect(2).To(Equal(len(query)))
+			Expect(3).To(Equal(len(query)))
 			Expect(query["hello"]).ToNot(BeNil())
 			Expect(query["world"]).ToNot(BeNil())
+			Expect(query["urlEncoded:Timestamp"]).ToNot(BeNil())
 			Expect(1).To(Equal(len(query["hello"])))
 			Expect(2).To(Equal(len(query["world"])))
+			Expect(1).To(Equal(len(query["urlEncoded:Timestamp"])))
 			Expect("1").To(Equal(query["hello"][0]))
 			Expect("2").To(Equal(query["world"][0]))
 			Expect("3").To(Equal(query["world"][1]))
+			parsedTime, err := time.Parse(time.RFC3339, query["urlEncoded:Timestamp"][0])
+			Expect(err).To(BeNil())
+			Expect(parsedTime).To(BeTemporally("~", now, time.Second))
 		})
 
 		// Support `QueryStringParameters` for backward compatibility.
 		// https://github.com/awslabs/aws-lambda-go-api-proxy/issues/37
 		qsRequest := getProxyRequest("/hello", "GET")
 		qsRequest.QueryStringParameters = map[string]string{
-			"hello": "1",
-			"world": "2",
+			"hello":                                 "1",
+			"world":                                 "2",
+			url.QueryEscape("urlEncoded:Timestamp"): urlEncodedTimestamp,
 		}
 		It("Populates query string correctly", func() {
 			httpReq, err := accessor.EventToRequestWithContext(context.Background(), qsRequest)
@@ -109,13 +122,16 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect("GET").To(Equal(httpReq.Method))
 
 			query := httpReq.URL.Query()
-			Expect(2).To(Equal(len(query)))
+			Expect(3).To(Equal(len(query)))
 			Expect(query["hello"]).ToNot(BeNil())
 			Expect(query["world"]).ToNot(BeNil())
 			Expect(1).To(Equal(len(query["hello"])))
 			Expect(1).To(Equal(len(query["world"])))
 			Expect("1").To(Equal(query["hello"][0]))
 			Expect("2").To(Equal(query["world"][0]))
+			parsedTime, err := time.Parse(time.RFC3339, query["urlEncoded:Timestamp"][0])
+			Expect(err).To(BeNil())
+			Expect(parsedTime).To(BeTemporally("~", now, time.Second))
 		})
 
 		mvhRequest := getProxyRequest("/hello", "GET")
