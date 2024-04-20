@@ -35,6 +35,11 @@ const (
 	// API Gateway stage variables. To access the stage variable values
 	// use the GetAPIGatewayStageVars method of the RequestAccessor object.
 	APIGwStageVarsHeader = "X-GoLambdaProxy-ApiGw-StageVars"
+
+	// APIGwPathParamsHeader is the custom header key used to store the
+	// API Gateway request's path parameters. To access the path parameters
+	// values use the GetAPIGatewayPathParams method of the RequestAccessor object.
+	APIGwPathParamsHeader = "X-GoLambdaProxy-ApiGw-PathParams"
 )
 
 // RequestAccessor objects give access to custom API Gateway properties
@@ -77,6 +82,24 @@ func (r *RequestAccessor) GetAPIGatewayStageVars(req *http.Request) (map[string]
 		return stageVars, err
 	}
 	return stageVars, nil
+}
+
+// GetAPIGatewayPathParams extracts the API Gateway request's path parameters
+// from a request's custom header.
+// Returns a map[string]string of the path parameters and their values from
+// the request.
+func (r *RequestAccessor) GetAPIGatewayPathParams(req *http.Request) (map[string]string, error) {
+	pathParams := make(map[string]string)
+	if req.Header.Get(APIGwPathParamsHeader) == "" {
+		return pathParams, errors.New("No path params header in request")
+	}
+	err := json.Unmarshal([]byte(req.Header.Get(APIGwPathParamsHeader)), &pathParams)
+	if err != nil {
+		log.Println("Error while unmarshalling path parameters")
+		log.Println(err)
+		return pathParams, err
+	}
+	return pathParams, nil
 }
 
 // StripBasePath instructs the RequestAccessor object that the given base
@@ -222,12 +245,23 @@ func addToHeader(req *http.Request, apiGwRequest events.APIGatewayProxyRequest) 
 		return req, err
 	}
 	req.Header.Set(APIGwContextHeader, string(apiGwContext))
+	pathParams, err := json.Marshal(apiGwRequest.PathParameters)
+	if err != nil {
+		log.Println("Could not marshal path params for custom header")
+		return nil, err
+	}
+	req.Header.Set(APIGwPathParamsHeader, string(pathParams))
 	return req, nil
 }
 
 func addToContext(ctx context.Context, req *http.Request, apiGwRequest events.APIGatewayProxyRequest) *http.Request {
 	lc, _ := lambdacontext.FromContext(ctx)
-	rc := requestContext{lambdaContext: lc, gatewayProxyContext: apiGwRequest.RequestContext, stageVars: apiGwRequest.StageVariables}
+	rc := requestContext{
+		lambdaContext:       lc,
+		gatewayProxyContext: apiGwRequest.RequestContext,
+		stageVars:           apiGwRequest.StageVariables,
+		pathParams:          apiGwRequest.PathParameters,
+	}
 	ctx = context.WithValue(ctx, ctxKey{}, rc)
 	return req.WithContext(ctx)
 }
@@ -250,10 +284,17 @@ func GetStageVarsFromContext(ctx context.Context) (map[string]string, bool) {
 	return v.stageVars, ok
 }
 
+// GetPathParamsFromContext retrieve path parameters from context
+func GetPathParamsFromContext(ctx context.Context) (map[string]string, bool) {
+	v, ok := ctx.Value(ctxKey{}).(requestContext)
+	return v.pathParams, ok
+}
+
 type ctxKey struct{}
 
 type requestContext struct {
 	lambdaContext       *lambdacontext.LambdaContext
 	gatewayProxyContext events.APIGatewayProxyRequestContext
 	stageVars           map[string]string
+	pathParams          map[string]string
 }
