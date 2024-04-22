@@ -55,7 +55,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/awslabs/aws-lambda-go-api-proxy/gin"
+	ginadapter "github.com/awslabs/aws-lambda-go-api-proxy/gin"
 	"github.com/gin-gonic/gin"
 )
 
@@ -83,6 +83,8 @@ func main() {
 	lambda.Start(Handler)
 }
 ```
+
+If you're using a Function URL, you can use the `ProxyFunctionURLWithContext` instead.
 
 ### Fiber
 
@@ -132,6 +134,7 @@ func main() {
 	lambda.Start(Handler)
 }
 ```
+If you're using a Function URL, you can use the `ProxyFunctionURLWithContext` instead.
 
 ## Other frameworks
 This package also supports [Negroni](https://github.com/urfave/negroni), [GorillaMux](https://github.com/gorilla/mux), and plain old `HandlerFunc` - take a look at the code in their respective sub-directories. All packages implement the `Proxy` method exactly like our Gin sample above.
