@@ -73,7 +73,7 @@ func (f *FiberLambda) proxyInternal(req *http.Request, err error) (events.APIGat
 	}
 
 	resp := core.NewProxyResponseWriter()
-	f.adaptor(resp, req)
+	f.adapter(resp, req)
 
 	proxyResponse, err := resp.GetProxyResponse()
 	if err != nil {
@@ -100,7 +100,7 @@ func (f *FiberLambda) proxyInternalV2(req *http.Request, err error) (events.APIG
 	return proxyResponse, nil
 }
 
-func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
+func (f *FiberLambda) adapter(w http.ResponseWriter, r *http.Request) {
 	// New fasthttp request
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
