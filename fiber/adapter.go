@@ -13,11 +13,10 @@ import (
 	"strings"
 
 	"github.com/aws/aws-lambda-go/events"
+	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/utils"
 	"github.com/valyala/fasthttp"
-
-	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 )
 
 // FiberLambda makes it easy to send API Gateway proxy events to a fiber.App.
@@ -26,6 +25,7 @@ import (
 type FiberLambda struct {
 	core.RequestAccessor
 	v2  core.RequestAccessorV2
+	fn  core.RequestAccessorFnURL
 	app *fiber.App
 }
 
@@ -66,6 +66,16 @@ func (f *FiberLambda) ProxyWithContextV2(ctx context.Context, req events.APIGate
 	return f.proxyInternalV2(fiberRequest, err)
 }
 
+func (f *FiberLambda) ProxyFunctionURL(req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	fiberRequest, err := f.fn.EventToRequest(req)
+	return f.proxyFunctionURL(fiberRequest, err)
+}
+
+func (f *FiberLambda) ProxyFunctionURLWithContext(ctx context.Context, req events.LambdaFunctionURLRequest) (events.LambdaFunctionURLResponse, error) {
+	fiberRequest, err := f.fn.EventToRequestWithContext(ctx, req)
+	return f.proxyFunctionURL(fiberRequest, err)
+}
+
 func (f *FiberLambda) proxyInternal(req *http.Request, err error) (events.APIGatewayProxyResponse, error) {
 
 	if err != nil {
@@ -98,6 +108,23 @@ func (f *FiberLambda) proxyInternalV2(req *http.Request, err error) (events.APIG
 	}
 
 	return proxyResponse, nil
+}
+
+func (f *FiberLambda) proxyFunctionURL(req *http.Request, err error) (events.LambdaFunctionURLResponse, error) {
+
+	if err != nil {
+		return core.FunctionURLTimeout(), core.NewLoggedError("Could not convert proxy event to request: %v", err)
+	}
+
+	resp := core.NewFunctionURLResponseWriter()
+	f.adaptor(resp, req)
+
+	FunctionURLResponse, err := resp.GetProxyResponse()
+	if err != nil {
+		return core.FunctionURLTimeout(), core.NewLoggedError("Error while generating proxy response: %v", err)
+	}
+
+	return FunctionURLResponse, nil
 }
 
 func (f *FiberLambda) adaptor(w http.ResponseWriter, r *http.Request) {
