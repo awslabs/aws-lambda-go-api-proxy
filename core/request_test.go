@@ -174,7 +174,7 @@ var _ = Describe("RequestAccessor tests", func() {
 			// calling old method to verify reverse compatibility
 			httpReq, err := accessor.ProxyEventToHTTPRequest(contextRequest)
 			Expect(err).To(BeNil())
-			Expect(2).To(Equal(len(httpReq.Header)))
+			Expect(3).To(Equal(len(httpReq.Header)))
 			Expect(httpReq.Header.Get(core.APIGwContextHeader)).ToNot(BeNil())
 		})
 	})
@@ -304,6 +304,52 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect("value2").To(Equal(stageVars["var2"]))
 		})
 
+		It("Populates path parameters correctly", func() {
+			varsRequest := getProxyRequest("orders", "GET")
+			varsRequest.PathParameters = getPathParameters()
+
+			accessor := core.RequestAccessor{}
+			httpReq, err := accessor.ProxyEventToHTTPRequest(varsRequest)
+			Expect(err).To(BeNil())
+
+			pathParams, err := accessor.GetAPIGatewayPathParams(httpReq)
+			Expect(err).To(BeNil())
+			Expect(2).To(Equal(len(pathParams)))
+			Expect(pathParams["param1"]).ToNot(BeNil())
+			Expect(pathParams["param2"]).ToNot(BeNil())
+			Expect("value1").To(Equal(pathParams["param1"]))
+			Expect("value2").To(Equal(pathParams["param2"]))
+
+			// overwrite existing path params header
+			varsRequestWithHeaders := getProxyRequest("orders", "GET")
+			varsRequestWithHeaders.PathParameters = getPathParameters()
+			varsRequestWithHeaders.Headers = map[string]string{core.APIGwPathParamsHeader: `{"var1":"abc123"}`}
+			httpReq, err = accessor.ProxyEventToHTTPRequest(varsRequestWithHeaders)
+			Expect(err).To(BeNil())
+			pathParams, err = accessor.GetAPIGatewayPathParams(httpReq)
+			Expect(err).To(BeNil())
+			Expect(pathParams["param1"]).To(Equal("value1"))
+
+			pathParams, ok := core.GetPathParamsFromContext(httpReq.Context())
+			// not present in context
+			Expect(ok).To(BeFalse())
+
+			httpReq, err = accessor.EventToRequestWithContext(context.Background(), varsRequest)
+			Expect(err).To(BeNil())
+
+			pathParams, err = accessor.GetAPIGatewayPathParams(httpReq)
+			// should not be in headers
+			Expect(err).ToNot(BeNil())
+
+			pathParams, ok = core.GetPathParamsFromContext(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect(2).To(Equal(len(pathParams)))
+			Expect(pathParams["param1"]).ToNot(BeNil())
+			Expect(pathParams["param2"]).ToNot(BeNil())
+			Expect("value1").To(Equal(pathParams["param1"]))
+			Expect("value2").To(Equal(pathParams["param2"]))
+		})
+
 		It("Populates the default hostname correctly", func() {
 
 			basicRequest := getProxyRequest("orders", "GET")
@@ -365,5 +411,12 @@ func getStageVariables() map[string]string {
 	return map[string]string{
 		"var1": "value1",
 		"var2": "value2",
+	}
+}
+
+func getPathParameters() map[string]string {
+	return map[string]string{
+		"param1": "value1",
+		"param2": "value2",
 	}
 }
