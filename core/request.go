@@ -161,7 +161,13 @@ func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*ht
 				if queryString != "" {
 					queryString += "&"
 				}
-				queryString += url.QueryEscape(q) + "=" + url.QueryEscape(v)
+				if _, err := url.QueryUnescape(q); err != nil {
+					q = url.QueryEscape(q)
+				}
+				if _, err := url.QueryUnescape(v); err != nil {
+					v = url.QueryEscape(v)
+				}
+				queryString += q + "=" + v
 			}
 		}
 		path += "?" + queryString
@@ -173,7 +179,14 @@ func (r *RequestAccessor) EventToRequest(req events.APIGatewayProxyRequest) (*ht
 			if queryString != "" {
 				queryString += "&"
 			}
-			queryString += url.QueryEscape(q) + "=" + url.QueryEscape(req.QueryStringParameters[q])
+			if _, err := url.QueryUnescape(q); err != nil {
+				q = url.QueryEscape(q)
+			}
+			param := req.QueryStringParameters[q]
+			if _, err := url.QueryUnescape(param); err != nil {
+				param = url.QueryEscape(param)
+			}
+			queryString += q + "=" + param
 		}
 		path += "?" + queryString
 	}
