@@ -195,6 +195,21 @@ func addToHeaderV2(req *http.Request, apiGwRequest events.APIGatewayV2HTTPReques
 		return nil, err
 	}
 	req.Header.Add(APIGwStageVarsHeader, string(stageVars))
+
+	pathParamVars, err := json.Marshal(apiGwRequest.PathParameters)
+	if err != nil {
+		log.Println("Could not marshal path params variables for custom header")
+		return nil, err
+	}
+	req.Header.Add(APIGwPathParamVarsHeader, string(pathParamVars))
+
+	queryStringParamVars, err := json.Marshal(apiGwRequest.QueryStringParameters)
+	if err != nil {
+		log.Println("Could not marshal query string params variables for custom header")
+		return nil, err
+	}
+	req.Header.Add(APIGwQueryStringVarsHeader, string(queryStringParamVars))
+
 	apiGwContext, err := json.Marshal(apiGwRequest.RequestContext)
 	if err != nil {
 		log.Println("Could not Marshal API GW context for custom header")
@@ -206,7 +221,13 @@ func addToHeaderV2(req *http.Request, apiGwRequest events.APIGatewayV2HTTPReques
 
 func addToContextV2(ctx context.Context, req *http.Request, apiGwRequest events.APIGatewayV2HTTPRequest) *http.Request {
 	lc, _ := lambdacontext.FromContext(ctx)
-	rc := requestContextV2{lambdaContext: lc, gatewayProxyContext: apiGwRequest.RequestContext, stageVars: apiGwRequest.StageVariables}
+	rc := requestContextV2{
+		lambdaContext:        lc,
+		gatewayProxyContext:  apiGwRequest.RequestContext,
+		stageVars:            apiGwRequest.StageVariables,
+		queryStringParamVars: apiGwRequest.QueryStringParameters,
+		pathParamVars:        apiGwRequest.PathParameters,
+	}
 	ctx = context.WithValue(ctx, ctxKey{}, rc)
 	return req.WithContext(ctx)
 }
@@ -230,9 +251,11 @@ func GetStageVarsFromContextV2(ctx context.Context) (map[string]string, bool) {
 }
 
 type requestContextV2 struct {
-	lambdaContext       *lambdacontext.LambdaContext
-	gatewayProxyContext events.APIGatewayV2HTTPRequestContext
-	stageVars           map[string]string
+	lambdaContext        *lambdacontext.LambdaContext
+	gatewayProxyContext  events.APIGatewayV2HTTPRequestContext
+	stageVars            map[string]string
+	pathParamVars        map[string]string
+	queryStringParamVars map[string]string
 }
 
 // splitSingletonHeaders splits the headers into single-value headers and other,

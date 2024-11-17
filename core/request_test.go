@@ -10,6 +10,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambdacontext"
+
 	"github.com/awslabs/aws-lambda-go-api-proxy/core"
 
 	. "github.com/onsi/ginkgo"
@@ -174,7 +175,7 @@ var _ = Describe("RequestAccessor tests", func() {
 			// calling old method to verify reverse compatibility
 			httpReq, err := accessor.ProxyEventToHTTPRequest(contextRequest)
 			Expect(err).To(BeNil())
-			Expect(2).To(Equal(len(httpReq.Header)))
+			Expect(4).To(Equal(len(httpReq.Header)))
 			Expect(httpReq.Header.Get(core.APIGwContextHeader)).ToNot(BeNil())
 		})
 	})
@@ -304,6 +305,53 @@ var _ = Describe("RequestAccessor tests", func() {
 			Expect("value2").To(Equal(stageVars["var2"]))
 		})
 
+		It("Populates query and path param variables correctly", func() {
+			varsRequest := getProxyRequest("orders", "GET")
+			varsRequest.PathParameters = getPathParamVariables()
+			varsRequest.QueryStringParameters = getQueryStringParamVariables()
+
+			accessor := core.RequestAccessor{}
+			httpReq, err := accessor.ProxyEventToHTTPRequest(varsRequest)
+			Expect(err).To(BeNil())
+
+			pathVars, err := accessor.GetAPIGatewayPathParamVars(httpReq)
+			Expect(err).To(BeNil())
+			Expect(2).To(Equal(len(pathVars)))
+			Expect(pathVars["var1"]).ToNot(BeNil())
+			Expect(pathVars["var2"]).ToNot(BeNil())
+			Expect("value1").To(Equal(pathVars["var1"]))
+			Expect("value2").To(Equal(pathVars["var2"]))
+
+			// overwrite existing pathvars header
+			varsRequestWithHeaders := getProxyRequest("orders", "GET")
+			varsRequestWithHeaders.PathParameters = getPathParamVariables()
+			varsRequestWithHeaders.Headers = map[string]string{core.APIGwPathParamVarsHeader: `{"var1":"abc123"}`}
+			httpReq, err = accessor.ProxyEventToHTTPRequest(varsRequestWithHeaders)
+			Expect(err).To(BeNil())
+			pathVars, err = accessor.GetAPIGatewayPathParamVars(httpReq)
+			Expect(err).To(BeNil())
+			Expect(pathVars["var1"]).To(Equal("value1"))
+
+			pathVars, ok := core.GetPathParamVarsFromContext(httpReq.Context())
+			// not present in context
+			Expect(ok).To(BeFalse())
+
+			httpReq, err = accessor.EventToRequestWithContext(context.Background(), varsRequest)
+			Expect(err).To(BeNil())
+
+			pathVars, err = accessor.GetAPIGatewayPathParamVars(httpReq)
+			// should not be in headers
+			Expect(err).ToNot(BeNil())
+
+			pathVars, ok = core.GetPathParamVarsFromContext(httpReq.Context())
+			Expect(ok).To(BeTrue())
+			Expect(2).To(Equal(len(pathVars)))
+			Expect(pathVars["var1"]).ToNot(BeNil())
+			Expect(pathVars["var2"]).ToNot(BeNil())
+			Expect("value1").To(Equal(pathVars["var1"]))
+			Expect("value2").To(Equal(pathVars["var2"]))
+		})
+
 		It("Populates the default hostname correctly", func() {
 
 			basicRequest := getProxyRequest("orders", "GET")
@@ -362,6 +410,20 @@ func getRequestContext() events.APIGatewayProxyRequestContext {
 }
 
 func getStageVariables() map[string]string {
+	return map[string]string{
+		"var1": "value1",
+		"var2": "value2",
+	}
+}
+
+func getPathParamVariables() map[string]string {
+	return map[string]string{
+		"var1": "value1",
+		"var2": "value2",
+	}
+}
+
+func getQueryStringParamVariables() map[string]string {
 	return map[string]string{
 		"var1": "value1",
 		"var2": "value2",
