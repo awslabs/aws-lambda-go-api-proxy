@@ -124,7 +124,7 @@ func (r *RequestAccessor) EventToRequestWithContext(ctx context.Context, req eve
 		log.Println(err)
 		return nil, err
 	}
-	return addToContext(ctx, httpRequest, req), nil
+	return addToHeader(addToContext(ctx, httpRequest, req), req)
 }
 
 // EventToRequest converts an API Gateway proxy event into an http.Request object.
